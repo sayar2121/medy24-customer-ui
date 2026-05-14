@@ -52,30 +52,30 @@ class AuthService {
     File? profilePhoto,
   }) async {
     try {
-      if (profilePhoto != null || fullName != null) {
-        // Use FormData if we have a file or it's a signup flow
-        final formData = FormData.fromMap({
-          'token': token,
-          'phone_number': phoneNumber,
-          'full_name': ?fullName,
-          'email': ?email,
-          'alternative_phone_no': ?alternativePhoneNo,
-          'saved_addresses': ?savedAddresses,
-          if (profilePhoto != null)
-            'profile_photo': await MultipartFile.fromFile(
-              profilePhoto.path,
-              filename: profilePhoto.path.split('/').last,
-            ),
-        });
+      // Backend expects Form data (multipart/form-data) for all fields
+      final formDataMap = <String, dynamic>{
+        'token': token,
+        'phone_number': phoneNumber,
+      };
 
-        return await _dio.post(ApiUrl.verifyOtp, data: formData);
-      } else {
-        // Simple JSON for login
-        return await _dio.post(
-          ApiUrl.verifyOtp,
-          data: {'token': token, 'phone_number': phoneNumber},
+      if (fullName != null) formDataMap['full_name'] = fullName;
+      if (email != null) formDataMap['email'] = email;
+      if (alternativePhoneNo != null) {
+        formDataMap['alternative_phone_no'] = alternativePhoneNo;
+      }
+      if (savedAddresses != null) {
+        formDataMap['saved_addresses'] = savedAddresses;
+      }
+
+      if (profilePhoto != null) {
+        formDataMap['profile_photo'] = await MultipartFile.fromFile(
+          profilePhoto.path,
+          filename: profilePhoto.path.split('/').last,
         );
       }
+
+      final formData = FormData.fromMap(formDataMap);
+      return await _dio.post(ApiUrl.verifyOtp, data: formData);
     } catch (e) {
       rethrow;
     }
@@ -97,17 +97,20 @@ class AuthService {
     File? profilePhoto,
   }) async {
     try {
-      final formData = FormData.fromMap({
-        'full_name': ?fullName,
-        'email': ?email,
-        'alternative_phone_no': ?alternativePhoneNo,
-        if (profilePhoto != null)
-          'profile_photo': await MultipartFile.fromFile(
-            profilePhoto.path,
-            filename: profilePhoto.path.split('/').last,
-          ),
-      });
+      final formDataMap = <String, dynamic>{};
+      if (fullName != null) formDataMap['full_name'] = fullName;
+      if (email != null) formDataMap['email'] = email;
+      if (alternativePhoneNo != null) {
+        formDataMap['alternative_phone_no'] = alternativePhoneNo;
+      }
+      if (profilePhoto != null) {
+        formDataMap['profile_photo'] = await MultipartFile.fromFile(
+          profilePhoto.path,
+          filename: profilePhoto.path.split('/').last,
+        );
+      }
 
+      final formData = FormData.fromMap(formDataMap);
       return await _dio.put(ApiUrl.updateProfile(customerId), data: formData);
     } catch (e) {
       rethrow;

@@ -20,16 +20,37 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        final user = ref.read(authProvider).user;
-        if (user != null) {
-          context.go('/patho-lab-list');
-        } else {
-          context.go('/login');
-        }
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    // Wait for splash animation/branding (minimum 2 seconds)
+    await Future.delayed(const Duration(milliseconds: 2000));
+    
+    if (!mounted) return;
+
+    final authState = ref.read(authProvider);
+    
+    // If not initialized yet, wait for it
+    if (!authState.isInitialized) {
+      // We can either poll or use a completer, but simplest is to wait a bit more 
+      // or rely on ref.listen in build if we want to be reactive.
+      // However, loadUser is usually very fast (SharedPreferences).
+      int retry = 0;
+      while (!ref.read(authProvider).isInitialized && retry < 10) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        retry++;
       }
-    });
+    }
+
+    if (mounted) {
+      final user = ref.read(authProvider).user;
+      if (user != null) {
+        context.go('/patho-lab-list');
+      } else {
+        context.go('/login');
+      }
+    }
   }
 
   @override

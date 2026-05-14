@@ -11,6 +11,7 @@ class AuthState {
   final String? error;
   final bool isOtpSent;
   final bool isUserExists;
+  final bool isInitialized;
 
   AuthState({
     this.user,
@@ -18,6 +19,7 @@ class AuthState {
     this.error,
     this.isOtpSent = false,
     this.isUserExists = false,
+    this.isInitialized = false,
   });
 
   AuthState copyWith({
@@ -26,6 +28,7 @@ class AuthState {
     String? error,
     bool? isOtpSent,
     bool? isUserExists,
+    bool? isInitialized,
   }) {
     return AuthState(
       user: user ?? this.user,
@@ -33,6 +36,7 @@ class AuthState {
       error: error,
       isOtpSent: isOtpSent ?? this.isOtpSent,
       isUserExists: isUserExists ?? this.isUserExists,
+      isInitialized: isInitialized ?? this.isInitialized,
     );
   }
 }
@@ -40,15 +44,29 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService = AuthService();
 
-  AuthNotifier() : super(AuthState()) {
+  AuthNotifier() : super(AuthState(isLoading: true)) {
     loadUser();
   }
 
   Future<void> loadUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString('user');
-    if (userJson != null) {
-      state = state.copyWith(user: UserModel.fromJson(userJson));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('user');
+      if (userJson != null) {
+        state = state.copyWith(
+          user: UserModel.fromJson(userJson),
+          isInitialized: true,
+          isLoading: false,
+        );
+      } else {
+        state = state.copyWith(isInitialized: true, isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isInitialized: true,
+        isLoading: false,
+        error: e.toString(),
+      );
     }
   }
 
