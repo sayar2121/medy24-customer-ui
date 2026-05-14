@@ -125,6 +125,13 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
+
+  static const TextStyle cardSubtitle = TextStyle(
+    fontFamily: _fontBody,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textSecondary,
+  );
 }
 
 /// [AppTheme] returns a [ThemeData] object configured with the modern medicine app aesthetic.

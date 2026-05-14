@@ -10,6 +10,9 @@ import '../screens/lab_test/lab_test_list_screen.dart';
 import '../screens/lab_test/lab_test_details_screen.dart';
 import '../screens/lab_test/test_package_list_screen.dart';
 import '../screens/lab_test/test_package_details_screen.dart';
+import '../screens/medicine/medicine_list_screen.dart';
+import '../screens/medicine/medicine_details_screen.dart';
+import '../screens/medicine/medicine_search_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -69,6 +72,18 @@ final appRouter = GoRouter(
         final packageId = state.pathParameters['packageId']!;
         return TestPackageDetailsScreen(packageId: packageId);
       },
+    ),
+    GoRoute(
+      path: '/medicine-list',
+      builder: (context, state) => const MedicineListScreen(),
+    ),
+    GoRoute(
+      path: '/medicine-details',
+      builder: (context, state) => const MedicineDetailsScreen(),
+    ),
+    GoRoute(
+      path: '/medicine-search',
+      builder: (context, state) => const MedicineSearchScreen(),
     ),
   ],
 );

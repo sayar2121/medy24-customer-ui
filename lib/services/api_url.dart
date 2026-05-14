@@ -39,6 +39,12 @@ class ApiUrl {
   static String deleteAddress(String customerId, int addressId) =>
       "$customers/addresses/$customerId/$addressId";
 
+  // Medicine Inventory Endpoints
+  static const String medicineInventory = "$baseUrl/medicine-inventory";
+  static const String getMedicineAll = "$medicineInventory/get-all";
+  static const String searchMedicines = "$medicineInventory/search";
+  static String getMedicineById(String id) => "$medicineInventory/get-by/$id";
+
   // Helper for image URLs
   static String imageUrl(String? path) {
     if (path == null || path.isEmpty) return "";

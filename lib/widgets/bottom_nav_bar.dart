@@ -67,6 +67,7 @@ class CustomBottomNavBar extends StatelessWidget {
                   isActive: currentIndex == 1,
                   onTap: () {
                     HapticFeedback.lightImpact();
+                    if (currentIndex != 1) context.go('/medicine-list');
                   },
                 ),
                 _NavBarItem(
