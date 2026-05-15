@@ -94,7 +94,7 @@ class ProfileOptionsCard extends StatelessWidget {
                   subtitle: 'Manage app settings',
                   color: AppColors.primary,
                   isLast: true,
-                  onTap: () {},
+                  onTap: () => context.push('/settings'),
                 ),
               ],
             ),
