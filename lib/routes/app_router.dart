@@ -20,23 +20,14 @@ import '../screens/privacy_policy/privacy_policy_screen.dart';
 import '../screens/terms_conditions/terms_conditions_screen.dart';
 import '../screens/profile/update_profile_screen.dart';
 import '../screens/profile/saved_addresses_screen.dart';
-import '../screens/profile/map_screen.dart';
+import '../screens/map/map_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
   routes: [
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/splash',
-      builder: (context, state) => const SplashScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
+    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(
       path: '/signup/:phone',
       builder: (context, state) {
