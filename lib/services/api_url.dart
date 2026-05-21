@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiUrl {
   static const String baseUrl =
       "http://10.0.2.2:8000"; // Update for real device if needed
@@ -37,10 +39,9 @@ class ApiUrl {
       "$testPackage/get-by-lab/$labId";
 
   // Lab Test / Package Booking Endpoints
-  static const String labTestBooking = "$baseUrl/lab-test-bookings";
-  static const String createLabTestBooking = "$labTestBooking/create";
   static const String testPackageBooking = "$baseUrl/test-package-bookings";
-  static const String createTestPackageBooking = "$testPackageBooking/create";
+  static const String createTestPackageBooking =
+      "$testPackageBooking/create-booking";
 
   // Customer Auth Endpoints
   static const String customers = "$baseUrl/customers";
@@ -69,4 +70,16 @@ class ApiUrl {
 
   // Platform Fee Endpoints
   static const String platformFee = "http://192.168.0.222:8000/admin/earnings/list";
+
+  /// Get Razorpay Key ID from environment variables
+  static String get razorpayKeyId {
+    final key = dotenv.env['RAZORPAY_KEY_ID'];
+    if (key == null || key.isEmpty) {
+      throw Exception(
+        'RAZORPAY_KEY_ID not found in .env file. '
+        'Please add RAZORPAY_KEY_ID=your_key_id to .env file.',
+      );
+    }
+    return key;
+  }
 }

@@ -83,12 +83,73 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
     }
   }
 
-  Future<void> _onPayNow() async {
+  Future<void> _onBookWithCash() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm cash booking'),
+        content: const Text(
+          'You will pay in cash at the time of sample collection. Do you want to place this order?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
     final user = ref.read(profileProvider).user ?? ref.read(authProvider).user;
-    final addresses = user?.savedAddresses;
-    final booking = await ref.read(bookTestPackageProvider.notifier).submitBooking(
+    final response = await ref
+        .read(bookTestPackageProvider.notifier)
+        .placeCashBooking(
+          customerId: user?.customerId,
+          savedAddresses: user?.savedAddresses,
+        );
+
+    if (!mounted) return;
+
+    final error = ref.read(bookTestPackageProvider).error;
+    if (response == null) {
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error)),
+        );
+      }
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Order placed'),
+        content: Text(
+          'Booking ID: ${response.bookingId}\nPay ₹${response.totalAmountToBePaid.toStringAsFixed(0)} in cash when the sample is collected.',
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
+
+    if (mounted) context.go('/home');
+  }
+
+  void _onPayOnline() {
+    final user = ref.read(profileProvider).user ?? ref.read(authProvider).user;
+    final booking = ref.read(bookTestPackageProvider.notifier).prepareCheckout(
       customerId: user?.customerId,
-      savedAddresses: addresses,
+      savedAddresses: user?.savedAddresses,
     );
 
     if (!mounted) return;
@@ -503,22 +564,33 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: state.isSubmitting ? null : _onPayNow,
-            child: state.isSubmitting
-                ? const SizedBox(
-                    height: 22,
-                    width: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Text('Pay Now · ₹${total.toStringAsFixed(0)}'),
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: state.isSubmitting ? null : _onBookWithCash,
+                child: state.isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Book with Cash at Collection'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: state.isSubmitting ? null : _onPayOnline,
+                child: Text('Pay Online · ₹${total.toStringAsFixed(0)}'),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -563,7 +635,7 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
     bool enabled = true,
   }) {
     return DropdownButtonFormField<String>(
-      value: items.contains(value) ? value : null,
+      initialValue: items.contains(value) ? value : null,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20, color: AppColors.textTertiary),

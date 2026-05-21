@@ -20,17 +20,25 @@ class BookTestPackageService {
     );
   }
 
-  Future<Response> submitBooking(TestPackageBooking booking) async {
-    final url = booking.itemType == BookingItemType.labTest
-        ? ApiUrl.createLabTestBooking
-        : ApiUrl.createTestPackageBooking;
-
+  Future<BookingResponse> createBooking(CreateBookingRequest request) async {
     try {
-      return await _dio.post(url, data: booking.toJson());
+      final response = await _dio.post(
+        ApiUrl.createTestPackageBooking,
+        data: request.toJson(),
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return BookingResponse.fromJson(data);
+      }
+      throw 'Invalid booking response';
     } on DioException catch (e) {
+      final detail = e.response?.data;
+      if (detail is Map && detail['detail'] != null) {
+        throw detail['detail'].toString();
+      }
       throw e.response?.data?['message'] ??
           e.message ??
-          'Failed to submit booking';
+          'Failed to create booking';
     }
   }
 }

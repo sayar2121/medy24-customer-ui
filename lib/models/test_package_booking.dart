@@ -155,22 +155,141 @@ class TestPackageBooking {
     );
   }
 
+}
+
+class CreateBookingRequest {
+  final String customerId;
+  final String labId;
+  final String bookingType;
+  final List<Map<String, dynamic>> bookedItems;
+  final List<Map<String, dynamic>> patientDetails;
+  final Map<String, dynamic> sampleCollectionAddress;
+  final double subTotalAmount;
+  final double totalDiscountAmount;
+  final double platformFee;
+  final double taxAmount;
+  final double totalAmountToBePaid;
+  final String paymentMode;
+  final String? transactionId;
+  final String? transactionHash;
+  final String? customerNote;
+
+  CreateBookingRequest({
+    required this.customerId,
+    required this.labId,
+    required this.bookingType,
+    required this.bookedItems,
+    required this.patientDetails,
+    required this.sampleCollectionAddress,
+    required this.subTotalAmount,
+    required this.totalDiscountAmount,
+    required this.platformFee,
+    required this.taxAmount,
+    required this.totalAmountToBePaid,
+    required this.paymentMode,
+    this.transactionId,
+    this.transactionHash,
+    this.customerNote,
+  });
+
+  factory CreateBookingRequest.fromTestPackageBooking(
+    TestPackageBooking booking, {
+    required String paymentMode,
+    String? transactionId,
+    String? transactionHash,
+  }) {
+    if (booking.customerId == null || booking.customerId!.isEmpty) {
+      throw 'Customer ID is required to place a booking';
+    }
+    if (booking.collectionAddress == null) {
+      throw 'Sample collection address is required';
+    }
+
+    return CreateBookingRequest(
+      customerId: booking.customerId!,
+      labId: booking.labId,
+      bookingType: booking.itemType == BookingItemType.labTest
+          ? 'single_test'
+          : 'package',
+      bookedItems: [
+        {
+          'item_id': booking.itemId,
+          'item_name': booking.itemName,
+          if (booking.itemSubtitle != null) 'item_subtitle': booking.itemSubtitle,
+        },
+      ],
+      patientDetails: [booking.patient.toJson()],
+      sampleCollectionAddress: booking.collectionAddress!.toJson(),
+      subTotalAmount: booking.priceSummary.subtotal,
+      totalDiscountAmount: booking.priceSummary.discount,
+      platformFee: booking.priceSummary.platformFee,
+      taxAmount: booking.priceSummary.taxCharges,
+      totalAmountToBePaid: booking.priceSummary.totalAmount,
+      paymentMode: paymentMode,
+      transactionId: transactionId,
+      transactionHash: transactionHash,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
-      'booking_type': itemType == BookingItemType.labTest ? 'lab_test' : 'package',
-      'item_id': itemId,
+      'customer_id': customerId,
       'lab_id': labId,
-      'item_name': itemName,
-      'is_booking_for_self': isBookingForSelf,
-      'patient': patient.toJson(),
-      if (collectionAddress != null)
-        'collection_address': collectionAddress!.toJson(),
-      'subtotal': priceSummary.subtotal,
-      'discount': priceSummary.discount,
-      'platform_fee': priceSummary.platformFee,
-      'tax_charges': priceSummary.taxCharges,
-      'total_amount': priceSummary.totalAmount,
-      if (customerId != null) 'customer_id': customerId,
+      'booking_type': bookingType,
+      'booked_items': bookedItems,
+      'patient_details': patientDetails,
+      'sample_collection_address': sampleCollectionAddress,
+      'sub_total_amount': subTotalAmount,
+      'total_discount_amount': totalDiscountAmount,
+      'platform_fee': platformFee,
+      'tax_amount': taxAmount,
+      'total_amount_to_be_paid': totalAmountToBePaid,
+      'payment_mode': paymentMode,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (transactionHash != null) 'transaction_hash': transactionHash,
+      if (customerNote != null) 'customer_note': customerNote,
     };
+  }
+}
+
+class BookingResponse {
+  final String bookingId;
+  final String customerId;
+  final String labId;
+  final String bookingStatus;
+  final double totalAmountToBePaid;
+  final String paymentMode;
+  final String? transactionId;
+  final String transactionStatus;
+
+  BookingResponse({
+    required this.bookingId,
+    required this.customerId,
+    required this.labId,
+    required this.bookingStatus,
+    required this.totalAmountToBePaid,
+    required this.paymentMode,
+    this.transactionId,
+    required this.transactionStatus,
+  });
+
+  factory BookingResponse.fromJson(Map<String, dynamic> json) {
+    return BookingResponse(
+      bookingId: json['booking_id']?.toString() ?? '',
+      customerId: json['customer_id']?.toString() ?? '',
+      labId: json['lab_id']?.toString() ?? '',
+      bookingStatus: json['booking_status']?.toString() ?? 'pending',
+      totalAmountToBePaid:
+          _toDouble(json['total_amount_to_be_paid']),
+      paymentMode: json['payment_mode']?.toString() ?? '',
+      transactionId: json['transaction_id']?.toString(),
+      transactionStatus: json['transaction_status']?.toString() ?? 'pending',
+    );
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0;
   }
 }

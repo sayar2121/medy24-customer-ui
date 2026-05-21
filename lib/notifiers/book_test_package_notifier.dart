@@ -26,6 +26,8 @@ class BookTestPackageState {
   final int? selectedAddressIndex;
   final BookingPriceSummary? priceSummary;
   final TestPackageBooking? confirmedBooking;
+  final BookingResponse? bookingResponse;
+  final String? razorpayPaymentId;
 
   const BookTestPackageState({
     this.isLoading = false,
@@ -47,6 +49,8 @@ class BookTestPackageState {
     this.selectedAddressIndex,
     this.priceSummary,
     this.confirmedBooking,
+    this.bookingResponse,
+    this.razorpayPaymentId,
   });
 
   bool get hasItem => itemId != null && itemType != null;
@@ -73,6 +77,10 @@ class BookTestPackageState {
     BookingPriceSummary? priceSummary,
     TestPackageBooking? confirmedBooking,
     bool clearConfirmedBooking = false,
+    BookingResponse? bookingResponse,
+    bool clearBookingResponse = false,
+    String? razorpayPaymentId,
+    bool clearRazorpayPaymentId = false,
   }) {
     return BookTestPackageState(
       isLoading: isLoading ?? this.isLoading,
@@ -98,6 +106,12 @@ class BookTestPackageState {
       confirmedBooking: clearConfirmedBooking
           ? null
           : (confirmedBooking ?? this.confirmedBooking),
+      bookingResponse: clearBookingResponse
+          ? null
+          : (bookingResponse ?? this.bookingResponse),
+      razorpayPaymentId: clearRazorpayPaymentId
+          ? null
+          : (razorpayPaymentId ?? this.razorpayPaymentId),
     );
   }
 }
@@ -381,13 +395,18 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
     );
   }
 
-  Future<TestPackageBooking?> submitBooking({
+  TestPackageBooking? prepareCheckout({
     required String? customerId,
     List<dynamic>? savedAddresses,
-  }) async {
+  }) {
     final validationError = validate();
     if (validationError != null) {
       state = state.copyWith(error: validationError);
+      return null;
+    }
+
+    if (customerId == null || customerId.isEmpty) {
+      state = state.copyWith(error: 'Please log in to continue');
       return null;
     }
 
@@ -400,23 +419,75 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
       return null;
     }
 
+    state = state.copyWith(
+      confirmedBooking: booking,
+      error: null,
+      clearBookingResponse: true,
+      clearRazorpayPaymentId: true,
+    );
+    return booking;
+  }
+
+  Future<BookingResponse?> placeCashBooking({
+    required String? customerId,
+    List<dynamic>? savedAddresses,
+  }) async {
+    final booking = prepareCheckout(
+      customerId: customerId,
+      savedAddresses: savedAddresses,
+    );
+    if (booking == null) return null;
+
     state = state.copyWith(isSubmitting: true, error: null);
     try {
-      await _bookingService.submitBooking(booking);
+      final request = CreateBookingRequest.fromTestPackageBooking(
+        booking,
+        paymentMode: 'cash',
+      );
+      final response = await _bookingService.createBooking(request);
       state = state.copyWith(
         isSubmitting: false,
-        confirmedBooking: booking,
+        bookingResponse: response,
       );
-      return booking;
+      return response;
     } catch (e) {
-      // Allow checkout even if API is unavailable — booking stored locally
+      state = state.copyWith(isSubmitting: false, error: e.toString());
+      return null;
+    }
+  }
+
+  Future<BookingResponse?> placeOnlineBooking({
+    required String? customerId,
+    List<dynamic>? savedAddresses,
+  }) async {
+    final booking = state.confirmedBooking ??
+        prepareCheckout(
+          customerId: customerId,
+          savedAddresses: savedAddresses,
+        );
+    if (booking == null) return null;
+
+    state = state.copyWith(isSubmitting: true, error: null);
+    try {
+      final request = CreateBookingRequest.fromTestPackageBooking(
+        booking,
+        paymentMode: 'online',
+      );
+      final response = await _bookingService.createBooking(request);
       state = state.copyWith(
         isSubmitting: false,
         confirmedBooking: booking,
-        error: null,
+        bookingResponse: response,
       );
-      return booking;
+      return response;
+    } catch (e) {
+      state = state.copyWith(isSubmitting: false, error: e.toString());
+      return null;
     }
+  }
+
+  void setRazorpayPaymentId(String paymentId) {
+    state = state.copyWith(razorpayPaymentId: paymentId);
   }
 
   void reset() {
