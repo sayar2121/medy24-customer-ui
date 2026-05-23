@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../models/charges.dart';
 import '../services/charges_services.dart';
 
@@ -80,8 +80,7 @@ class ChargesNotifier extends StateNotifier<ChargesState> {
     required String serviceType,
     bool? isPeakTime,
   }) {
-    final matches =
-        charges.where((c) => c.serviceType == serviceType).toList();
+    final matches = charges.where((c) => c.serviceType == serviceType).toList();
     if (matches.isEmpty) return null;
 
     if (isPeakTime != null) {

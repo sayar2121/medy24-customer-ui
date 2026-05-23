@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../models/charges.dart';
 import '../models/lab_test.dart';
 import '../models/test_package_booking.dart';
@@ -127,7 +127,7 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
   double _gstPercentage = defaultGstPercentage;
 
   BookTestPackageNotifier(this._bookingService, this._labTestService)
-      : super(const BookTestPackageState());
+    : super(const BookTestPackageState());
 
   void applyCharges(ChargesModel charge) {
     _platformCommission = charge.platformCommission;
@@ -142,7 +142,11 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
     List<dynamic>? savedAddresses,
     ChargesModel? charges,
   }) async {
-    state = state.copyWith(isLoading: true, error: null, clearConfirmedBooking: true);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      clearConfirmedBooking: true,
+    );
     try {
       LabTestInventoryModel? resolvedTest = test;
       if (resolvedTest == null || resolvedTest.testId != testId) {
@@ -183,7 +187,11 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
     List<dynamic>? savedAddresses,
     ChargesModel? charges,
   }) async {
-    state = state.copyWith(isLoading: true, error: null, clearConfirmedBooking: true);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      clearConfirmedBooking: true,
+    );
     try {
       TestPackageModel? resolvedPackage = package;
       if (resolvedPackage == null || resolvedPackage.packageId != packageId) {
@@ -205,8 +213,7 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
         itemId: resolvedPackage.packageId,
         labId: resolvedPackage.labId,
         itemName: resolvedPackage.packageName,
-        itemSubtitle:
-            '${resolvedPackage.testDetails.length} tests included',
+        itemSubtitle: '${resolvedPackage.testDetails.length} tests included',
         subtotal: resolvedPackage.packageMarketPrice,
         discount: resolvedPackage.discountAmount,
         user: user,
@@ -351,7 +358,10 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
     return null;
   }
 
-  TestPackageBooking? buildBooking({String? customerId, List<dynamic>? savedAddresses}) {
+  TestPackageBooking? buildBooking({
+    String? customerId,
+    List<dynamic>? savedAddresses,
+  }) {
     if (state.priceSummary == null ||
         state.itemType == null ||
         state.itemId == null ||
@@ -365,8 +375,8 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
     if (state.selectedAddressIndex != null &&
         savedAddresses != null &&
         state.selectedAddressIndex! < savedAddresses.length) {
-      selectedAddress = savedAddresses[state.selectedAddressIndex!]
-          as Map<String, dynamic>;
+      selectedAddress =
+          savedAddresses[state.selectedAddressIndex!] as Map<String, dynamic>;
     }
 
     return TestPackageBooking(
@@ -445,10 +455,7 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
         paymentMode: 'cash',
       );
       final response = await _bookingService.createBooking(request);
-      state = state.copyWith(
-        isSubmitting: false,
-        bookingResponse: response,
-      );
+      state = state.copyWith(isSubmitting: false, bookingResponse: response);
       return response;
     } catch (e) {
       state = state.copyWith(isSubmitting: false, error: e.toString());
@@ -460,11 +467,9 @@ class BookTestPackageNotifier extends StateNotifier<BookTestPackageState> {
     required String? customerId,
     List<dynamic>? savedAddresses,
   }) async {
-    final booking = state.confirmedBooking ??
-        prepareCheckout(
-          customerId: customerId,
-          savedAddresses: savedAddresses,
-        );
+    final booking =
+        state.confirmedBooking ??
+        prepareCheckout(customerId: customerId, savedAddresses: savedAddresses);
     if (booking == null) return null;
 
     state = state.copyWith(isSubmitting: true, error: null);

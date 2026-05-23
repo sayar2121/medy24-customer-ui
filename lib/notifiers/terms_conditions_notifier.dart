@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../models/terms_conditions.dart';
 import '../services/terms_conditions_services.dart';
 

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../models/cart.dart';
 import '../models/medicine.dart';
 import '../models/charges.dart';
@@ -116,7 +117,9 @@ class CartNotifier extends StateNotifier<CartState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await ref.read(cartServiceProvider).addItem(cid, medicine.medicineId!, newQuantity);
+      final response = await ref
+          .read(cartServiceProvider)
+          .addItem(cid, medicine.medicineId!, newQuantity);
       _updateStateFromResponse(response);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -133,7 +136,9 @@ class CartNotifier extends StateNotifier<CartState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await ref.read(cartServiceProvider).updateItem(cid, medicineId, newQuantity);
+      final response = await ref
+          .read(cartServiceProvider)
+          .updateItem(cid, medicineId, newQuantity);
       _updateStateFromResponse(response);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -146,7 +151,9 @@ class CartNotifier extends StateNotifier<CartState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await ref.read(cartServiceProvider).removeItem(cid, medicineId);
+      final response = await ref
+          .read(cartServiceProvider)
+          .removeItem(cid, medicineId);
       _updateStateFromResponse(response);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

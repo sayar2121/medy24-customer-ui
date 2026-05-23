@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../notifiers/privacy_policy_notifier.dart';
 import '../services/privacy_policy_services.dart';
 

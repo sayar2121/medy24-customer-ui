@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../models/medicine.dart';
 import '../services/medicine_services.dart';
 
@@ -84,16 +84,18 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
     List<String>? priceRange,
     bool clearFilter = false,
   }) async {
-    final newPriceRange = clearFilter ? null : (priceRange ?? state.listPriceRange);
+    final newPriceRange = clearFilter
+        ? null
+        : (priceRange ?? state.listPriceRange);
 
     if (loadMore) {
       if (state.isFetchingMore || !state.hasMore) return;
       state = state.copyWith(isFetchingMore: true, error: null);
     } else {
       state = state.copyWith(
-        isLoading: true, 
-        error: null, 
-        currentPage: 1, 
+        isLoading: true,
+        error: null,
+        currentPage: 1,
         hasMore: true,
         listPriceRange: newPriceRange,
       );
@@ -101,19 +103,25 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
 
     try {
       final page = loadMore ? state.currentPage + 1 : 1;
-      
+
       final response = (newPriceRange != null && newPriceRange.isNotEmpty)
-          ? await _service.searchMedicines(priceRange: newPriceRange, page: page)
+          ? await _service.searchMedicines(
+              priceRange: newPriceRange,
+              page: page,
+            )
           : await _service.getAllMedicines(page: page);
 
       if (response.statusCode == 200) {
         final List data = response.data['data'] ?? [];
         final newMedicines = data.map((m) => MedicineModel.fromMap(m)).toList();
-        
-        final hasMoreData = newMedicines.isNotEmpty && newMedicines.length >= 20;
+
+        final hasMoreData =
+            newMedicines.isNotEmpty && newMedicines.length >= 20;
 
         state = state.copyWith(
-          medicines: loadMore ? [...state.medicines, ...newMedicines] : newMedicines,
+          medicines: loadMore
+              ? [...state.medicines, ...newMedicines]
+              : newMedicines,
           isLoading: false,
           isFetchingMore: false,
           currentPage: page,
@@ -121,13 +129,17 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
         );
       } else {
         state = state.copyWith(
-          isLoading: false, 
+          isLoading: false,
           isFetchingMore: false,
-          error: "Failed to load medicines"
+          error: "Failed to load medicines",
         );
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, isFetchingMore: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isFetchingMore: false,
+        error: e.toString(),
+      );
     }
   }
 
@@ -139,7 +151,10 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
         final medicine = MedicineModel.fromMap(response.data['data']);
         state = state.copyWith(selectedMedicine: medicine, isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: "Failed to load medicine details");
+        state = state.copyWith(
+          isLoading: false,
+          error: "Failed to load medicine details",
+        );
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -160,10 +175,10 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
         (pRange == null || pRange.isEmpty) &&
         (cat == null || cat.isEmpty)) {
       state = state.copyWith(
-        searchResults: [], 
-        lastSearchTerm: null, 
-        lastPriceRange: null, 
-        lastCategory: null
+        searchResults: [],
+        lastSearchTerm: null,
+        lastPriceRange: null,
+        lastCategory: null,
       );
       return;
     }
@@ -173,9 +188,9 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
       state = state.copyWith(isFetchingMoreSearch: true, error: null);
     } else {
       state = state.copyWith(
-        isLoading: true, 
-        error: null, 
-        searchPage: 1, 
+        isLoading: true,
+        error: null,
+        searchPage: 1,
         hasMoreSearch: true,
         lastSearchTerm: sTerm,
         lastPriceRange: pRange,
@@ -191,15 +206,17 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
         category: cat,
         page: page,
       );
-      
+
       if (response.statusCode == 200) {
         final List data = response.data['data'] ?? [];
         final results = data.map((m) => MedicineModel.fromMap(m)).toList();
-        
+
         final hasMoreData = results.isNotEmpty && results.length >= 20;
 
         state = state.copyWith(
-          searchResults: loadMore ? [...state.searchResults, ...results] : results, 
+          searchResults: loadMore
+              ? [...state.searchResults, ...results]
+              : results,
           isLoading: false,
           isFetchingMoreSearch: false,
           searchPage: page,
@@ -207,13 +224,17 @@ class MedicineNotifier extends StateNotifier<MedicineState> {
         );
       } else {
         state = state.copyWith(
-          isLoading: false, 
+          isLoading: false,
           isFetchingMoreSearch: false,
-          error: "Search failed"
+          error: "Search failed",
         );
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, isFetchingMoreSearch: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isFetchingMoreSearch: false,
+        error: e.toString(),
+      );
     }
   }
 

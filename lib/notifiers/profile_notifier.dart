@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user.dart';
@@ -145,8 +146,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       // Get fresh Firebase ID token
-      final firebaseToken =
-          await FirebaseAuth.instance.currentUser?.getIdToken();
+      final firebaseToken = await FirebaseAuth.instance.currentUser
+          ?.getIdToken();
       if (firebaseToken == null) throw 'Authentication token expired';
 
       final response = await _authService.deleteAddress(

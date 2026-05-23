@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../models/lab_test.dart';
 import '../models/my_test_booking.dart';
 import '../services/lab_test_services.dart';
@@ -198,20 +198,32 @@ class LabTestNotifier extends StateNotifier<LabTestState> {
       final response = await _service.getCustomerBookings(customerId);
       if (response.statusCode == 200) {
         final List data = response.data['bookings'] ?? [];
-        final bookings = data.map((b) => BookingDetailResponse.fromJson(b)).toList();
+        final bookings = data
+            .map((b) => BookingDetailResponse.fromJson(b))
+            .toList();
         state = state.copyWith(myBookings: bookings, isBookingsLoading: false);
       } else {
-        state = state.copyWith(isBookingsLoading: false, bookingsError: "Failed to load bookings");
+        state = state.copyWith(
+          isBookingsLoading: false,
+          bookingsError: "Failed to load bookings",
+        );
       }
     } catch (e) {
-      state = state.copyWith(isBookingsLoading: false, bookingsError: e.toString());
+      state = state.copyWith(
+        isBookingsLoading: false,
+        bookingsError: e.toString(),
+      );
     }
   }
 
   Future<bool> cancelBooking(String bookingId, String reason) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _service.updateBookingStatus(bookingId, "cancelled", cancellationReason: reason);
+      final response = await _service.updateBookingStatus(
+        bookingId,
+        "cancelled",
+        cancellationReason: reason,
+      );
       if (response.statusCode == 200) {
         final updatedBooking = BookingDetailResponse.fromJson(response.data);
         final updatedBookings = state.myBookings.map((b) {
@@ -223,7 +235,10 @@ class LabTestNotifier extends StateNotifier<LabTestState> {
         state = state.copyWith(myBookings: updatedBookings, isLoading: false);
         return true;
       } else {
-        state = state.copyWith(isLoading: false, error: "Failed to cancel booking");
+        state = state.copyWith(
+          isLoading: false,
+          error: "Failed to cancel booking",
+        );
         return false;
       }
     } catch (e) {

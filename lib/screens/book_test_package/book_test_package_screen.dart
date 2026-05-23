@@ -48,12 +48,17 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
   }
 
   Future<void> _initializeBooking() async {
-    await Future.wait([
-      ref.read(profileProvider.notifier).fetchProfile(),
-      ref.read(chargesProvider.notifier).fetchChargeByServiceType(
-            ChargesNotifier.labBookingServiceType,
-          ),
-    ]);
+    await Future.wait(
+      [
+            ref.read(profileProvider.notifier).fetchProfile(),
+            ref
+                .read(chargesProvider.notifier)
+                .fetchChargeByServiceType(
+                  ChargesNotifier.labBookingServiceType,
+                ),
+          ]
+          as Iterable<Future<dynamic>>,
+    );
     if (!mounted) return;
 
     final profileUser = ref.read(profileProvider).user;
@@ -119,9 +124,9 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
     final error = ref.read(bookTestPackageProvider).error;
     if (response == null) {
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
       }
       return;
     }
@@ -147,19 +152,21 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
 
   void _onPayOnline() {
     final user = ref.read(profileProvider).user ?? ref.read(authProvider).user;
-    final booking = ref.read(bookTestPackageProvider.notifier).prepareCheckout(
-      customerId: user?.customerId,
-      savedAddresses: user?.savedAddresses,
-    );
+    final booking = ref
+        .read(bookTestPackageProvider.notifier)
+        .prepareCheckout(
+          customerId: user?.customerId,
+          savedAddresses: user?.savedAddresses,
+        );
 
     if (!mounted) return;
 
     final error = ref.read(bookTestPackageProvider).error;
     if (booking == null) {
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
       }
       return;
     }
@@ -174,9 +181,7 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
     final chargesState = ref.watch(chargesProvider);
 
     if (bookingState.isLoading || chargesState.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (!bookingState.hasItem) {
@@ -292,7 +297,9 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
 
   void _onToggleSelf(bool forSelf) {
     final user = ref.read(profileProvider).user ?? ref.read(authProvider).user;
-    ref.read(bookTestPackageProvider.notifier).setBookingForSelf(forSelf, user: user);
+    ref
+        .read(bookTestPackageProvider.notifier)
+        .setBookingForSelf(forSelf, user: user);
   }
 
   Widget _buildToggleItem({
@@ -344,8 +351,9 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
           readOnly: readOnly,
           keyboardType: TextInputType.phone,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged:
-              ref.read(bookTestPackageProvider.notifier).updatePhoneNumber,
+          onChanged: ref
+              .read(bookTestPackageProvider.notifier)
+              .updatePhoneNumber,
         ),
         const SizedBox(height: 12),
         _buildDropdown(
@@ -374,7 +382,9 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
                 label: 'Relation',
                 icon: Iconsax.people,
                 value: state.relation.isEmpty ? null : state.relation,
-                items: state.isBookingForSelf ? ['Self'] : _relations.where((r) => r != 'Self').toList(),
+                items: state.isBookingForSelf
+                    ? ['Self']
+                    : _relations.where((r) => r != 'Self').toList(),
                 onChanged: state.isBookingForSelf
                     ? (_) {}
                     : ref.read(bookTestPackageProvider.notifier).updateRelation,
@@ -416,9 +426,7 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
               child: Row(
                 children: [
                   Icon(
-                    isSelected
-                        ? Iconsax.tick_circle
-                        : Iconsax.location,
+                    isSelected ? Iconsax.tick_circle : Iconsax.location,
                     color: isSelected
                         ? AppColors.primary
                         : AppColors.textTertiary,
@@ -463,7 +471,9 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
           label: 'Address line (House / Flat / Building)',
           icon: Iconsax.home,
           value: state.addressLine1,
-          onChanged: ref.read(bookTestPackageProvider.notifier).updateAddressLine1,
+          onChanged: ref
+              .read(bookTestPackageProvider.notifier)
+              .updateAddressLine1,
         ),
         const SizedBox(height: 12),
         _buildTextField(
@@ -471,8 +481,9 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
           icon: Iconsax.location,
           value: state.streetAddress,
           maxLines: 2,
-          onChanged:
-              ref.read(bookTestPackageProvider.notifier).updateStreetAddress,
+          onChanged: ref
+              .read(bookTestPackageProvider.notifier)
+              .updateStreetAddress,
         ),
       ],
     );
@@ -539,8 +550,8 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
             color: isDiscount
                 ? AppColors.error
                 : isTotal
-                    ? AppColors.primaryAccent
-                    : AppColors.textPrimary,
+                ? AppColors.primaryAccent
+                : AppColors.textPrimary,
           ),
         ),
       ],
@@ -642,10 +653,7 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
       ),
       items: items
           .map(
-            (item) => DropdownMenuItem<String>(
-              value: item,
-              child: Text(item),
-            ),
+            (item) => DropdownMenuItem<String>(value: item, child: Text(item)),
           )
           .toList(),
       onChanged: enabled

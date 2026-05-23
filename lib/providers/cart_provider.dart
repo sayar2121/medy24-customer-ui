@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../notifiers/cart_notifier.dart';
 import '../services/cart_services.dart';
 import 'profile_provider.dart';
