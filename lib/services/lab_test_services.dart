@@ -57,6 +57,18 @@ class LabTestService {
   }
 
   // Test Package Methods
+  Future<Response> getAllPackages({int page = 1, int limit = 20}) async {
+    try {
+      final response = await _dio.get(
+        ApiUrl.getTestPackageAll,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      return response;
+    } on DioException catch (e) {
+      throw e.message ?? "An error occurred while fetching all packages";
+    }
+  }
+
   Future<Response> getPackageById(String packageId) async {
     try {
       final response = await _dio.get(ApiUrl.getTestPackageById(packageId));

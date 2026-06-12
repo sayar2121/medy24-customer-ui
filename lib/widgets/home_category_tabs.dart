@@ -3,11 +3,13 @@ import '../theme/app_theme.dart';
 
 class HomeCategoryTab {
   final String label;
+  final IconData? icon;
   final String? badge;
   final Color? badgeColor;
 
   const HomeCategoryTab({
     required this.label,
+    this.icon,
     this.badge,
     this.badgeColor,
   });
@@ -52,7 +54,7 @@ class _HomeCategoryTabsState extends State<HomeCategoryTabs> {
         children: [
           const Divider(height: 1, color: AppColors.divider),
           SizedBox(
-            height: 50,
+            height: 56, // Slightly increased from 50
             child: ListView.builder(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
@@ -66,8 +68,12 @@ class _HomeCategoryTabsState extends State<HomeCategoryTabs> {
                   onTap: () => widget.onTabSelected(index),
                   child: Container(
                     margin: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 6,
+                    ),
+                    padding: const EdgeInsets.symmetric(
                       horizontal: 4,
-                      vertical: 8,
+                      vertical: 4,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -75,43 +81,53 @@ class _HomeCategoryTabsState extends State<HomeCategoryTabs> {
                         Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 4,
-                              ),
-                              child: Text(
-                                tab.label,
-                                style: TextStyle(
-                                  fontFamily: 'Lexend',
-                                  fontSize: 13,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (tab.icon != null) ...[
+                                  Icon(
+                                    tab.icon,
+                                    size: 18,
+                                    color: isSelected
+                                        ? AppColors.primaryAccent
+                                        : AppColors.textSecondary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                Text(
+                                  tab.label,
+                                  style: TextStyle(
+                                    fontFamily: 'Lexend',
+                                    fontSize: 14,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w600,
+                                    color: isSelected
+                                        ? AppColors.primaryAccent
+                                        : AppColors.textSecondary,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                             if (tab.badge != null)
                               Positioned(
-                                top: -2,
-                                right: -2,
+                                top: -6,
+                                right: -10,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 4,
-                                    vertical: 1,
+                                    vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: tab.badgeColor ?? AppColors.error,
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     tab.badge!,
                                     style: const TextStyle(
                                       fontFamily: 'Lexend',
-                                      fontSize: 7,
+                                      fontSize: 8,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
                                       letterSpacing: 0.3,
@@ -121,14 +137,15 @@ class _HomeCategoryTabsState extends State<HomeCategoryTabs> {
                               ),
                           ],
                         ),
-                        // Active indicator
+                        const SizedBox(height: 6),
+                        // Active bottom line indicator
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          height: 2,
-                          width: isSelected ? 28 : 0,
+                          height: 3, 
+                          width: isSelected ? 60 : 0, // Increased to span properly
                           decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(1),
+                            color: AppColors.primaryAccent,
+                            borderRadius: BorderRadius.circular(1.5),
                           ),
                         ),
                       ],

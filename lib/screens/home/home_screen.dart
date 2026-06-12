@@ -13,6 +13,7 @@ import '../../widgets/home_service_grid.dart';
 import '../../widgets/home_order_via_section.dart';
 import '../../widgets/health_concern_grid.dart';
 import '../../widgets/footer_card.dart';
+import '../../widgets/category_content_sliver.dart';
 import '../../providers/medicine_provider.dart';
 import '../../cards/medicine/medicine_card.dart';
 
@@ -56,6 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final authState = ref.watch(authProvider);
     final user = authState.user;
     final location = _getLocation(user);
+    final userName = user?.fullName ?? user?.phoneNumber ?? 'Guest';
     final cartState = ref.watch(cartProvider);
     final cartCount = cartState.items.length;
 
@@ -68,21 +70,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverAppBar(
             pinned: true,
             floating: false,
-            expandedHeight: 0,
+            stretch: true, // Smooth over-scroll stretching effect
+            expandedHeight: 218, // Exactly fits Header(92) + Bottom(126)
             collapsedHeight: 0,
             toolbarHeight: 0,
             backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
             elevation: 0,
             scrolledUnderElevation: 2,
             shadowColor: Colors.black.withAlpha(20),
-            flexibleSpace: null,
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(186),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Location Header
-                  HomeTopHeader(
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.parallax, // Smooth parallax hiding effect
+              background: Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                  child: HomeTopHeader(
+                    userName: userName,
                     location: location,
                     deliveryTime: '30 mins',
                     cartCount: cartCount,
@@ -90,7 +94,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     onCartTap: () => context.push('/cart'),
                     onProfileTap: () => context.push('/profile'),
                   ),
-
+                ),
+              ),
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(126), // Exactly fits Search + Tabs
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   // Search Bar
                   HomeSearchInput(
                     onTap: () => context.push('/medicine-search'),
@@ -99,28 +110,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // Category Tabs
                   HomeCategoryTabs(
                     selectedIndex: _selectedTabIndex,
-                    onTabSelected: (i) =>
-                        setState(() => _selectedTabIndex = i),
+                    onTabSelected: (i) {
+                      setState(() => _selectedTabIndex = i);
+                      if (i == 0) {
+                        ref.read(medicineProvider.notifier).clearSearch();
+                      } else {
+                        final labels = ['All', 'Skin Care', 'Summer', 'Woman', 'Men', 'Baby', 'Nutrition'];
+                        ref.read(medicineProvider.notifier).searchMedicines(
+                          category: labels[i],
+                        );
+                      }
+                    },
                     tabs: const [
-                      HomeCategoryTab(label: 'All'),
                       HomeCategoryTab(
-                        label: '50% OFF',
+                        label: 'All',
+                        icon: Icons.grid_view_rounded,
+                      ),
+                      HomeCategoryTab(
+                        label: 'Skin Care',
+                        icon: Icons.face_retouching_natural,
                         badge: 'HOT',
                         badgeColor: Color(0xFFEF4444),
                       ),
                       HomeCategoryTab(
-                        label: 'Lab Tests',
-                        badge: 'FREE',
-                        badgeColor: Color(0xFF10B981),
+                        label: 'Summer',
+                        icon: Icons.wb_sunny_outlined,
                       ),
-                      HomeCategoryTab(label: 'Packages'),
                       HomeCategoryTab(
-                        label: 'New Arrivals',
-                        badge: 'NEW',
-                        badgeColor: Color(0xFF3B82F6),
+                        label: 'Woman',
+                        icon: Icons.female,
                       ),
-                      HomeCategoryTab(label: 'Skin Care'),
-                      HomeCategoryTab(label: 'Vitamins'),
+                      HomeCategoryTab(
+                        label: 'Men',
+                        icon: Icons.male,
+                      ),
+                      HomeCategoryTab(
+                        label: 'Baby',
+                        icon: Icons.child_care,
+                      ),
+                      HomeCategoryTab(
+                        label: 'Nutrition',
+                        icon: Icons.spa_outlined,
+                      ),
                     ],
                   ),
                 ],
@@ -129,7 +160,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
 
           // ── Scrollable Body
-          SliverList(
+          if (_selectedTabIndex > 0)
+            const CategoryContentSliver()
+          else
+            SliverList(
             delegate: SliverChildListDelegate([
               const SizedBox(height: 16),
 
@@ -181,7 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     subtitle: 'Free Home Pickup',
                     offerText: 'Flat 15% off',
                     offerColor: AppColors.success,
-                    imagePath: 'assets/logo/book_lab_test.png',
+                    imagePath: 'assets/logo/blood_test.png',
                     onTap: () => context.push('/lab-test-list'),
                   ),
                   HomeServiceGridItem(

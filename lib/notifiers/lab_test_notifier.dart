@@ -144,6 +144,25 @@ class LabTestNotifier extends StateNotifier<LabTestState> {
     }
   }
 
+  Future<void> fetchAllPackages() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await _service.getAllPackages(limit: 100); // Respect FastAPI le=100 constraint
+      if (response.statusCode == 200) {
+        final List data = response.data['data'] ?? [];
+        final packages = data.map((p) => TestPackageModel.fromJson(p)).toList();
+        state = state.copyWith(packages: packages, isLoading: false);
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: "Failed to load all packages",
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   Future<void> fetchPackagesForLabs(List<String> labIds) async {
     state = state.copyWith(isLoading: true, error: null, packages: []);
     try {

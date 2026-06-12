@@ -22,14 +22,23 @@ class LabTestHeaderCard extends ConsumerWidget {
 
     return Stack(
       children: [
-        // Background Image with Parallax-ready fit
-        if (core.testPhotoUrl != null)
-          Positioned.fill(
-            child: Image.network(
-              ApiUrl.imageUrl(core.testPhotoUrl!),
-              fit: BoxFit.cover,
-            ),
-          ),
+        Positioned.fill(
+          child: core.testPhotoUrl != null && core.testPhotoUrl!.isNotEmpty
+              ? Image.network(
+                  ApiUrl.imageUrl(core.testPhotoUrl!),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/logo/blood_test.png',
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+              : Image.asset(
+                  'assets/logo/blood_test.png',
+                  fit: BoxFit.cover,
+                ),
+        ),
         // Gradient Overlay for readability
         Positioned.fill(
           child: Container(

@@ -6,6 +6,7 @@ class PathoLabService {
   final Dio _dio = Dio();
 
   PathoLabService() {
+    _dio.options.headers['ngrok-skip-browser-warning'] = 'true';
     _dio.interceptors.add(PrettyDioLogger(
       requestHeader: true,
       requestBody: true,

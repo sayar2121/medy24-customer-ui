@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../providers/lab_test_provider.dart';
-import '../../providers/patho_lab_provider.dart';
+
 import '../../theme/app_theme.dart';
-import '../../widgets/app_bar.dart';
 import '../../cards/lab_test/package_card.dart';
 
 class TestPackageListScreen extends ConsumerStatefulWidget {
@@ -17,9 +16,18 @@ class TestPackageListScreen extends ConsumerStatefulWidget {
 }
 
 class _TestPackageListScreenState extends ConsumerState<TestPackageListScreen> {
-  bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedCategory = 'All';
+
+  final List<String> _categories = [
+    'All',
+    'Full Body',
+    'Diabetes',
+    'Women\'s Health',
+    'Senior Citizen',
+    'Vitamin',
+  ];
 
   @override
   void initState() {
@@ -29,17 +37,8 @@ class _TestPackageListScreenState extends ConsumerState<TestPackageListScreen> {
 
   Future<void> _loadData() async {
     Future.microtask(() async {
-      // 1. Fetch labs first to know which labs to get packages from
-      await ref.read(pathoLabProvider.notifier).fetchLabs(status: 'active');
-      
-      // 2. Get the list of lab IDs
-      final labs = ref.read(pathoLabProvider).labs;
-      final labIds = labs.map((l) => l.labId).toList();
-      
-      // 3. Fetch all packages for these labs
-      if (labIds.isNotEmpty) {
-        await ref.read(labTestProvider.notifier).fetchPackagesForLabs(labIds);
-      }
+      // Fetch all packages directly in a single API call to avoid N+1 requests
+      await ref.read(labTestProvider.notifier).fetchAllPackages();
     });
   }
 
@@ -52,84 +51,168 @@ class _TestPackageListScreenState extends ConsumerState<TestPackageListScreen> {
   @override
   Widget build(BuildContext context) {
     final labTestState = ref.watch(labTestProvider);
-    final packages = labTestState.packages
-        .where(
-          (p) =>
-              p.packageName.toLowerCase().contains(_searchQuery.toLowerCase()),
-        )
-        .toList();
+    
+    // Filter packages by search query AND selected category (mocking category filter for now)
+    final packages = labTestState.packages.where((p) {
+      final matchesSearch = p.packageName.toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesCategory = _selectedCategory == 'All' || 
+          p.packageName.toLowerCase().contains(_selectedCategory.toLowerCase());
+      return matchesSearch && matchesCategory;
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        showBackButton: true,
-        title: _isSearching ? null : 'Health Packages',
-        subtitle: _isSearching ? null : 'Comprehensive health checkups',
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isSearching ? Iconsax.close_circle : Iconsax.search_normal_1,
-            ),
-            onPressed: () {
-              setState(() {
-                _isSearching = !_isSearching;
-                if (!_isSearching) {
-                  _searchQuery = '';
-                  _searchController.clear();
-                }
-              });
-            },
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(context),
+          
+          // Filter Chips
+          SliverToBoxAdapter(
+            child: _buildCategoryChips(),
           ),
+
+          // Content
+          if (labTestState.isLoading)
+            const SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+            )
+          else if (packages.isEmpty)
+            SliverFillRemaining(
+              child: _buildEmptyState(),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final package = packages[index];
+                    return PackageCard(
+                      package: package,
+                      onTap: () {
+                        context.push(
+                          '/test-package-details/${package.packageId}',
+                        );
+                      },
+                    );
+                  },
+                  childCount: packages.length,
+                ),
+              ),
+            ),
         ],
       ),
-      body: Column(
-        children: [
-          if (_isSearching)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.screenPadding,
-                vertical: 8,
+    );
+  }
+
+  Widget _buildSliverAppBar(BuildContext context) {
+    return SliverAppBar(
+      pinned: true,
+      floating: false,
+      stretch: true,
+      expandedHeight: 140,
+      collapsedHeight: 60,
+      toolbarHeight: 60,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      scrolledUnderElevation: 2,
+      shadowColor: Colors.black.withAlpha(20),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+        onPressed: () => context.pop(),
+      ),
+      title: const Text(
+        'Health Packages',
+        style: TextStyle(
+          fontFamily: 'Lexend',
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      centerTitle: true,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
+        background: Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(color: AppColors.divider),
               ),
               child: TextField(
                 controller: _searchController,
-                autofocus: true,
                 decoration: InputDecoration(
-                  hintText: 'Search packages...',
-                  prefixIcon: const Icon(
-                    Iconsax.search_normal,
-                    size: 20,
-                    color: AppColors.primary,
+                  hintText: 'Search for health packages...',
+                  hintStyle: TextStyle(
+                    fontFamily: 'Lexend',
+                    fontSize: 13,
+                    color: AppColors.textTertiary.withAlpha(180),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  prefixIcon: const Icon(Iconsax.search_normal_1, size: 20, color: AppColors.textTertiary),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onChanged: (val) => setState(() => _searchQuery = val),
               ),
             ),
-          Expanded(
-            child: labTestState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : packages.isEmpty
-                ? _buildEmptyState()
-                : RefreshIndicator(
-                    onRefresh: () => _loadData(),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-                      itemCount: packages.length,
-                      itemBuilder: (context, index) {
-                        final package = packages[index];
-                        return PackageCard(
-                          package: package,
-                          onTap: () {
-                            context.push(
-                              '/test-package-details/${package.packageId}',
-                            );
-                          },
-                        );
-                      },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChips() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: _categories.map((category) {
+            final isSelected = _selectedCategory == category;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedCategory = category;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.divider,
                     ),
                   ),
-          ),
-        ],
+                  child: Text(
+                    category,
+                    style: TextStyle(
+                      fontFamily: 'Lexend',
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -139,12 +222,28 @@ class _TestPackageListScreenState extends ConsumerState<TestPackageListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Iconsax.box_search, size: 64, color: AppColors.textTertiary),
-          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(10),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Iconsax.box_search, size: 64, color: AppColors.primary.withAlpha(150)),
+          ),
+          const SizedBox(height: 24),
           Text(
-            _searchQuery.isEmpty
-                ? 'No packages available'
-                : 'No packages found for "$_searchQuery"',
+            _searchQuery.isEmpty && _selectedCategory == 'All'
+                ? 'No packages available right now'
+                : 'No packages found',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Try adjusting your search or filters.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textTertiary,
             ),

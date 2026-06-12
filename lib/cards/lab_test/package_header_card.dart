@@ -24,11 +24,27 @@ class PackageHeaderCard extends ConsumerWidget {
       ),
       child: Stack(
         children: [
-          // Decorative background pattern/opacity
+          // Background Image
           Positioned.fill(
-            child: Opacity(
-              opacity: 0.1,
-              child: Icon(Iconsax.health, size: 200, color: Colors.white),
+            child: Image.asset(
+              'assets/logo/lab.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Gradient Overlay for readability
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.primary.withAlpha(200),
+                    AppColors.primary.withAlpha(180),
+                    AppColors.primary,
+                  ],
+                ),
+              ),
             ),
           ),
           SafeArea(

@@ -3,6 +3,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../theme/app_theme.dart';
 
 class HomeTopHeader extends StatelessWidget {
+  final String userName;
   final String location;
   final String deliveryTime;
   final int cartCount;
@@ -12,6 +13,7 @@ class HomeTopHeader extends StatelessWidget {
 
   const HomeTopHeader({
     super.key,
+    required this.userName,
     required this.location,
     required this.deliveryTime,
     required this.cartCount,
@@ -24,83 +26,61 @@ class HomeTopHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12), // Slightly increased top padding
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Icon
-          GestureDetector(
-            onTap: onProfileTap,
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.background,
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: const Icon(
-                Iconsax.user,
-                size: 20,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-
-          // Location Section
+          // Left Side: Welcome, Delivery Time, Location
           Expanded(
-            child: GestureDetector(
-              onTap: onLocationTap,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      // Lightning bolt + delivery time
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withAlpha(20),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.flash_on_rounded,
-                              size: 12,
-                              color: AppColors.primaryAccent,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              deliveryTime,
-                              style: const TextStyle(
-                                fontFamily: 'Lexend',
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primaryAccent,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Welcome Back text
+                Text(
+                  'Welcome back, $userName 👋',
+                  style: const TextStyle(
+                    fontFamily: 'Lexend',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
                   ),
-                  const SizedBox(height: 3),
-                  Row(
+                ),
+                const SizedBox(height: 4),
+
+                // Delivery Time (Bold & Eye-Catchy)
+                Text(
+                  'Delivery in $deliveryTime',
+                  style: const TextStyle(
+                    fontFamily: 'Lexend',
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900, // Extra Bold
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+
+                // Location Subtitle
+                GestureDetector(
+                  onTap: onLocationTap,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      const Icon(
+                        Iconsax.location,
+                        size: 14,
+                        color: AppColors.primaryAccent,
+                      ),
+                      const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           location,
                           style: const TextStyle(
                             fontFamily: 'Lexend',
                             fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -108,65 +88,96 @@ class HomeTopHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       const Icon(
-                        Iconsax.arrow_down_1,
-                        size: 14,
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 16,
                         color: AppColors.textSecondary,
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
 
-          // Cart Icon with badge
-          GestureDetector(
-            onTap: onCartTap,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
+          // Right Side: Profile & Cart
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Profile Icon
+              GestureDetector(
+                onTap: onProfileTap,
+                child: Container(
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.background,
-                    border: Border.all(color: AppColors.divider),
+                    border: Border.all(color: AppColors.divider, width: 1.5),
                   ),
-                  child: const Icon(
-                    Iconsax.bag_2,
-                    size: 20,
-                    color: AppColors.textSecondary,
+                  child: const Center(
+                    child: Icon(
+                      Iconsax.user,
+                      size: 20,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
-                if (cartCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -4,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: const BoxDecoration(
+              ),
+              const SizedBox(width: 12),
+
+              // Cart Icon with badge
+              GestureDetector(
+                onTap: onCartTap,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.error,
+                        color: AppColors.background,
+                        border: Border.all(color: AppColors.divider, width: 1.5),
                       ),
-                      child: Center(
-                        child: Text(
-                          cartCount > 9 ? '9+' : '$cartCount',
-                          style: const TextStyle(
-                            fontFamily: 'Lexend',
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
+                      child: const Center(
+                        child: Icon(
+                          Iconsax.bag_2,
+                          size: 20,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
+                    if (cartCount > 0)
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.error,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          child: Center(
+                            child: Text(
+                              cartCount > 9 ? '9+' : '$cartCount',
+                              style: const TextStyle(
+                                fontFamily: 'Lexend',
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
