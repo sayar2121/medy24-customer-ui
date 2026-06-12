@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../models/medicine.dart';
 import '../../theme/app_theme.dart';
-import '../../services/api_url.dart';
+
 import 'package:go_router/go_router.dart';
 
 class MedicineHeaderCard extends StatelessWidget {
@@ -22,14 +22,10 @@ class MedicineHeaderCard extends StatelessWidget {
         children: [
           // Background Image
           Positioned.fill(
-            child:
-                medicine.medicinePhoto != null &&
-                    medicine.medicinePhoto!.isNotEmpty
-                ? Image.network(
-                    ApiUrl.imageUrl(medicine.medicinePhoto),
-                    fit: BoxFit.cover,
-                  )
-                : Container(color: AppColors.divider),
+            child: Image.asset(
+              'assets/logo/demo_med_image.png',
+              fit: BoxFit.cover,
+            ),
           ),
 
           // Gradient Overlay for readability

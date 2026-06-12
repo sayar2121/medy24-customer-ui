@@ -25,7 +25,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(chargesProvider.notifier).fetchChargeByServiceType('parcel');
+      ref.read(chargesProvider.notifier).fetchChargeByServiceType('medicine');
     });
   }
 
@@ -56,9 +56,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   const CartBillSummaryCard(),
                   const SizedBox(height: AppSpacing.sectionGap),
                   const CartAddressCard(),
-                  const SizedBox(
-                    height: 200,
-                  ), // extra padding for bottom navigation
                 ],
               ],
             ),
@@ -67,7 +64,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             const LinearProgressIndicator(color: AppColors.primary),
         ],
       ),
-      bottomSheet: isCartEmpty
+      bottomNavigationBar: isCartEmpty
           ? null
           : Container(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),

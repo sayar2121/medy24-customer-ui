@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../models/medicine.dart';
 import '../../theme/app_theme.dart';
-import '../../services/api_url.dart';
+
 
 class MedicineSearchCard extends StatelessWidget {
   final MedicineModel medicine;
@@ -43,14 +43,10 @@ class MedicineSearchCard extends StatelessWidget {
                 width: 80,
                 height: 80,
                 color: AppColors.divider,
-                child:
-                    medicine.medicinePhoto != null &&
-                        medicine.medicinePhoto!.isNotEmpty
-                    ? Image.network(
-                        ApiUrl.imageUrl(medicine.medicinePhoto),
-                        fit: BoxFit.cover,
-                      )
-                    : const Icon(Iconsax.box, color: AppColors.textSecondary),
+                child: Image.asset(
+                  'assets/logo/demo_med_image.png',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             const SizedBox(width: 16),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
@@ -50,16 +51,76 @@ final appRouter = GoRouter(
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        return Scaffold(
-          body: navigationShell,
-          bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: navigationShell.currentIndex,
-            onTap: (index) {
-              navigationShell.goBranch(
-                index,
-                initialLocation: index == navigationShell.currentIndex,
-              );
-            },
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+
+            final shouldExit = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: const Text(
+                  'Exit App',
+                  style: TextStyle(
+                    fontFamily: 'Lexend',
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                content: const Text(
+                  'Are you sure you want to exit Medy24?',
+                  style: TextStyle(fontFamily: 'Lexend'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontFamily: 'Lexend',
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Exit',
+                      style: TextStyle(
+                        fontFamily: 'Lexend',
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+
+            if (shouldExit == true) {
+              SystemNavigator.pop();
+            }
+          },
+          child: Scaffold(
+            body: navigationShell,
+            bottomNavigationBar: CustomBottomNavBar(
+              currentIndex: navigationShell.currentIndex,
+              onTap: (index) {
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
+              },
+            ),
           ),
         );
       },

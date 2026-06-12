@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../models/medicine.dart';
 import '../../theme/app_theme.dart';
-import '../../services/api_url.dart';
+
 import '../../providers/cart_provider.dart';
 
 class MedicineCard extends ConsumerWidget {
@@ -32,16 +32,10 @@ class MedicineCard extends ConsumerWidget {
                   ),
                   child: AspectRatio(
                     aspectRatio: 1.3,
-                    child:
-                        medicine.medicinePhoto != null &&
-                            medicine.medicinePhoto!.isNotEmpty
-                        ? Image.network(
-                            ApiUrl.imageUrl(medicine.medicinePhoto),
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildPlaceholder(),
-                          )
-                        : _buildPlaceholder(),
+                    child: Image.asset(
+                      'assets/logo/demo_med_image.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 if (medicine.discountPercent != null &&
@@ -176,13 +170,6 @@ class MedicineCard extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: AppColors.divider,
-      child: Center(child: Icon(Iconsax.box, color: AppColors.textSecondary)),
     );
   }
 }

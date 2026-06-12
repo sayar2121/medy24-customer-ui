@@ -49,7 +49,7 @@ class CartService {
       options.contentType = Headers.jsonContentType;
       return await _dio.put(
         ApiUrl.cartUpdateItem(medicineId),
-        data: quantity,
+        data: {'quantity': quantity},
         options: options,
       );
     } catch (e) {

@@ -46,7 +46,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (mounted) {
       final user = ref.read(authProvider).user;
       if (user != null) {
-        context.go('/patho-lab-list');
+        context.go('/home');
       } else {
         context.go('/login');
       }
