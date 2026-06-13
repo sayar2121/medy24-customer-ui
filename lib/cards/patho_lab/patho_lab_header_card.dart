@@ -23,16 +23,26 @@ class PathoLabHeaderCard extends StatelessWidget {
       child: Stack(
         children: [
           // Background Image
-          if (lab.labLogoUrl != null)
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.4,
-                child: Image.network(
-                  ApiUrl.imageUrl(lab.labLogoUrl!),
-                  fit: BoxFit.cover,
-                ),
-              ),
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.4,
+              child: lab.labLogoUrl != null && lab.labLogoUrl!.isNotEmpty
+                  ? Image.network(
+                      ApiUrl.imageUrl(lab.labLogoUrl!),
+                      fit: BoxFit.cover,
+                      headers: const {'ngrok-skip-browser-warning': 'true'},
+                      errorBuilder: (context, error, stackTrace) =>
+                          Image.asset(
+                        'assets/logo/lab.png',
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(
+                      'assets/logo/lab.png',
+                      fit: BoxFit.cover,
+                    ),
             ),
+          ),
           // Gradient Overlay
           Positioned.fill(
             child: Container(

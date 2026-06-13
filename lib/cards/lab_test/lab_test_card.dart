@@ -129,8 +129,14 @@ class LabTestCard extends ConsumerWidget {
   }
 
   Widget _buildPlaceholder() {
-    return const Center(
-      child: Icon(Iconsax.microphone, color: AppColors.primary, size: 32),
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Center(
+        child: Image.asset(
+          'assets/logo/blood_test.png',
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 

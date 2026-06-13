@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
@@ -16,6 +17,7 @@ import '../../widgets/footer_card.dart';
 import '../../widgets/category_content_sliver.dart';
 import '../../providers/medicine_provider.dart';
 import '../../cards/medicine/medicine_card.dart';
+import '../../widgets/welcome_popup.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -33,6 +35,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Future.microtask(
       () => ref.read(medicineProvider.notifier).fetchAllMedicines(),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowWelcomePopup();
+    });
+  }
+
+  Future<void> _checkAndShowWelcomePopup() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // TEMPORARY: Reset the memory flag so you can test it again!
+    await prefs.remove('has_seen_welcome_popup');
+    
+    final hasSeen = prefs.getBool('has_seen_welcome_popup') ?? false;
+    
+    if (!hasSeen) {
+      if (!mounted) return;
+      
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const WelcomePopup(),
+      );
+      
+      await prefs.setBool('has_seen_welcome_popup', true);
+    }
   }
 
   String _getLocation(dynamic user) {
@@ -116,9 +142,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ref.read(medicineProvider.notifier).clearSearch();
                       } else {
                         final labels = ['All', 'Skin Care', 'Summer', 'Woman', 'Men', 'Baby', 'Nutrition'];
-                        ref.read(medicineProvider.notifier).searchMedicines(
-                          category: labels[i],
-                        );
+                        ref.read(medicineProvider.notifier).searchMedicines(category: labels[i]);
                       }
                     },
                     tabs: const [
@@ -215,7 +239,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     subtitle: 'Free Home Pickup',
                     offerText: 'Flat 15% off',
                     offerColor: AppColors.success,
-                    imagePath: 'assets/logo/blood_test.png',
+                    imagePath: 'assets/logo/book_lab_test.png',
                     onTap: () => context.push('/lab-test-list'),
                   ),
                   HomeServiceGridItem(

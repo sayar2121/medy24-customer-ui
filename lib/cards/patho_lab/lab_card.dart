@@ -134,8 +134,14 @@ class LabCard extends StatelessWidget {
   }
 
   Widget _buildPlaceholder() {
-    return const Center(
-      child: Icon(Iconsax.hospital_copy, color: AppColors.primary, size: 32),
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Center(
+        child: Image.asset(
+          'assets/logo/lab.png',
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 

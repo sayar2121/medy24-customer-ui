@@ -7,6 +7,7 @@ class AuthService {
   final Dio _dio = Dio();
 
   AuthService() {
+    _dio.options.headers['ngrok-skip-browser-warning'] = 'true';
     _dio.interceptors.add(
       PrettyDioLogger(
         requestHeader: true,

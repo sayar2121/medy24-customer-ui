@@ -40,6 +40,8 @@ class CartBillSummaryCard extends ConsumerWidget {
           _buildRow('Item Total', summary.totalItemAmount, Iconsax.box),
           if (summary.totalDiscount > 0)
             _buildRow('Item Discount', -summary.totalDiscount, Iconsax.discount_shape, color: AppColors.success),
+          if (summary.orderValueDiscount > 0)
+            _buildRow('Order Value Offer', -summary.orderValueDiscount, Iconsax.tag, color: AppColors.success),
           _buildRow('Platform Fee', summary.platformCharges, Iconsax.monitor),
           _buildRow('Delivery Fee', summary.deliveryFees, Iconsax.truck_fast),
           _buildRow('Taxes', summary.taxes, Iconsax.bank),

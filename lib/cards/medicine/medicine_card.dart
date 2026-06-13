@@ -15,6 +15,10 @@ class MedicineCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOutOfStock = medicine.isActive == false;
+    final cartState = ref.watch(cartProvider);
+    final cartItemIndex = cartState.items.indexWhere((item) => item.medicine.medicineId == medicine.medicineId);
+    final isInCart = cartItemIndex != -1;
+    final cartItem = isInCart ? cartState.items[cartItemIndex] : null;
 
     return GestureDetector(
       onTap: onTap,
@@ -134,34 +138,71 @@ class MedicineCard extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: isOutOfStock ? null : () {
-                          ref.read(cartProvider.notifier).addItem(medicine);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Added to cart'),
-                              backgroundColor: AppColors.success,
-                              behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 1),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      isInCart
+                          ? Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  InkWell(
+                                    onTap: () => ref.read(cartProvider.notifier).updateQuantity(medicine.medicineId!, cartItem!.quantity - 1),
+                                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(6.0),
+                                      child: Icon(Iconsax.minus, size: 16, color: Colors.white),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                                    constraints: const BoxConstraints(minWidth: 20),
+                                    child: Text(
+                                      '${cartItem!.quantity}',
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () => ref.read(cartProvider.notifier).updateQuantity(medicine.medicineId!, cartItem.quantity + 1),
+                                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(6.0),
+                                      child: Icon(Iconsax.add, size: 16, color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: isOutOfStock ? null : () {
+                                ref.read(cartProvider.notifier).addItem(medicine);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Added to cart'),
+                                    backgroundColor: AppColors.success,
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 1),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: isOutOfStock
+                                      ? AppColors.divider
+                                      : AppColors.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Iconsax.add,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: isOutOfStock
-                                ? AppColors.divider
-                                : AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Iconsax.add,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ],

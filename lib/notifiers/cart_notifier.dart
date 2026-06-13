@@ -36,21 +36,29 @@ class CartState {
 
   CartSummary getSummary(ChargesModel? charges) {
     double itemAmount = 0.0;
-    double discount = 0.0;
+    double itemDiscount = 0.0;
 
     for (var item in items) {
       double mrp = item.medicine.mrp ?? 0.0;
       double finalPrice = item.medicine.finalPrice ?? mrp;
 
       itemAmount += mrp * item.quantity;
-      discount += (mrp - finalPrice) * item.quantity;
+      itemDiscount += (mrp - finalPrice) * item.quantity;
     }
 
-    double platformCharges = items.isEmpty
-        ? 0.0
-        : (charges?.platformCommission ?? 30.0);
-    double deliveryFees = items.isEmpty ? 0.0 : (charges?.baseFare ?? 40.0);
-    double subTotal = itemAmount - discount;
+    double subTotalBeforeOrderDiscount = itemAmount - itemDiscount;
+    double orderValueDiscount = 0.0;
+
+    if (subTotalBeforeOrderDiscount >= 500 && subTotalBeforeOrderDiscount < 1000) {
+      orderValueDiscount = subTotalBeforeOrderDiscount * 0.03;
+    } else if (subTotalBeforeOrderDiscount >= 1000) {
+      orderValueDiscount = subTotalBeforeOrderDiscount * 0.05;
+    }
+
+    double subTotal = subTotalBeforeOrderDiscount - orderValueDiscount;
+
+    double platformCharges = items.isEmpty ? 0.0 : 10.0;
+    double deliveryFees = items.isEmpty ? 0.0 : 10.0;
     double taxPercent = charges?.gstPercentage ?? 5.0;
     double taxes = subTotal * (taxPercent / 100);
 
@@ -60,12 +68,13 @@ class CartState {
 
     return CartSummary(
       totalItemAmount: itemAmount,
-      totalDiscount: discount,
+      totalDiscount: itemDiscount,
+      orderValueDiscount: orderValueDiscount,
       platformCharges: platformCharges,
       deliveryFees: deliveryFees,
       taxes: taxes,
       totalAmountToBePaid: totalToPay,
-      totalSaved: discount,
+      totalSaved: itemDiscount + orderValueDiscount,
     );
   }
 }

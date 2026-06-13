@@ -7,6 +7,7 @@ class BookTestPackageService {
   final Dio _dio = Dio();
 
   BookTestPackageService() {
+    _dio.options.headers['ngrok-skip-browser-warning'] = 'true';
     _dio.interceptors.add(
       PrettyDioLogger(
         requestHeader: true,

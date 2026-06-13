@@ -6,7 +6,7 @@ import '../../providers/lab_test_provider.dart';
 import '../../providers/patho_lab_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_bar.dart';
-import '../../cards/lab_test/lab_test_card.dart';
+import '../../cards/lab_test/lab_test_grid_card.dart';
 import '../../widgets/explore_package_card.dart';
 
 class LabTestListScreen extends ConsumerStatefulWidget {
@@ -25,7 +25,7 @@ class _LabTestListScreenState extends ConsumerState<LabTestListScreen> {
     super.initState();
     Future.microtask(() {
       ref.read(labTestProvider.notifier).fetchAllTests();
-      ref.read(pathoLabProvider.notifier).fetchLabs(status: 'active');
+      ref.read(pathoLabProvider.notifier).fetchLabs();
     });
   }
 
@@ -35,9 +35,28 @@ class _LabTestListScreenState extends ConsumerState<LabTestListScreen> {
     super.dispose();
   }
 
+  String _selectedCategory = 'All';
+
   @override
   Widget build(BuildContext context) {
     final labTestState = ref.watch(labTestProvider);
+    
+    // Extract unique categories for the filter
+    final categories = ['All'];
+    for (var test in labTestState.tests) {
+      final cat = test.coreTestDetails?.testCategory;
+      if (cat != null && cat.isNotEmpty && !categories.contains(cat)) {
+        categories.add(cat);
+      }
+    }
+
+    // Filter tests
+    var displayTests = labTestState.tests;
+    if (_selectedCategory != 'All') {
+      displayTests = displayTests.where((test) {
+        return test.coreTestDetails?.testCategory == _selectedCategory;
+      }).toList();
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -92,29 +111,126 @@ class _LabTestListScreenState extends ConsumerState<LabTestListScreen> {
                 : RefreshIndicator(
                     onRefresh: () =>
                         ref.read(labTestProvider.notifier).fetchAllTests(),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-                      itemCount:
-                          labTestState.tests.length + (_isSearching ? 0 : 1),
-                      itemBuilder: (context, index) {
-                        if (!_isSearching && index == 0) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            child: ExplorePackageCard(
-                              onTap: () => context.push('/test-package-list'),
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        // Promo Banner
+                        if (!_isSearching)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.screenPadding,
+                                16,
+                                AppSpacing.screenPadding,
+                                0,
+                              ),
+                              child: ExplorePackageCard(
+                                onTap: () => context.push('/test-package-list'),
+                              ),
                             ),
-                          );
-                        }
+                          ),
+                          
+                        // Horizontal Category Filter
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: SizedBox(
+                              height: 38,
+                              child: ListView.separated(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.screenPadding,
+                                ),
+                                scrollDirection: Axis.horizontal,
+                                itemCount: categories.length,
+                                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  final isSelected = _selectedCategory == category;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedCategory = category;
+                                      });
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? AppColors.primary : Colors.white,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: isSelected 
+                                              ? AppColors.primary 
+                                              : AppColors.divider,
+                                        ),
+                                        boxShadow: isSelected ? [
+                                          BoxShadow(
+                                            color: AppColors.primary.withAlpha(50),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          )
+                                        ] : null,
+                                      ),
+                                      child: Text(
+                                        category,
+                                        style: AppTextStyles.bodyMedium.copyWith(
+                                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
 
-                        final testIndex = _isSearching ? index : index - 1;
-                        final test = labTestState.tests[testIndex];
-                        return LabTestCard(
-                          test: test,
-                          onTap: () {
-                            context.push('/lab-test-details/${test.testId}');
-                          },
-                        );
-                      },
+                        // Grid of Tests
+                        displayTests.isEmpty
+                            ? SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 40),
+                                  child: Center(
+                                    child: Text(
+                                      'No tests found',
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        color: AppColors.textTertiary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : SliverPadding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.screenPadding,
+                                  0,
+                                  AppSpacing.screenPadding,
+                                  32,
+                                ),
+                                sliver: SliverGrid(
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 16,
+                                    crossAxisSpacing: 16,
+                                    childAspectRatio: 0.68,
+                                  ),
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final test = displayTests[index];
+                                      return LabTestGridCard(
+                                        test: test,
+                                        onTap: () {
+                                          context.push('/lab-test-details/${test.testId}');
+                                        },
+                                      );
+                                    },
+                                    childCount: displayTests.length,
+                                  ),
+                                ),
+                              ),
+                      ],
                     ),
                   ),
           ),

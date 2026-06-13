@@ -330,17 +330,13 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
   }
 
   Widget _buildPatientForm(BookTestPackageState state) {
-    final readOnly = state.isBookingForSelf;
     return Column(
-      key: ValueKey(
-        'patient-${state.isBookingForSelf}-${state.fullName}-${state.phoneNumber}-${state.gender}-${state.ageText}-${state.relation}',
-      ),
+      key: ValueKey('patient-${state.isBookingForSelf}'),
       children: [
         _buildTextField(
           label: 'Full Name',
           icon: Iconsax.user,
           value: state.fullName,
-          readOnly: readOnly,
           onChanged: ref.read(bookTestPackageProvider.notifier).updateFullName,
         ),
         const SizedBox(height: 12),
@@ -348,7 +344,6 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
           label: 'Phone No',
           icon: Iconsax.mobile,
           value: state.phoneNumber,
-          readOnly: readOnly,
           keyboardType: TextInputType.phone,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onChanged: ref
@@ -356,17 +351,22 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
               .updatePhoneNumber,
         ),
         const SizedBox(height: 12),
-        _buildDropdown(
-          label: 'Gender',
-          icon: Iconsax.user_tag,
-          value: state.gender.isEmpty ? null : state.gender,
-          items: _genders,
-          onChanged: ref.read(bookTestPackageProvider.notifier).updateGender,
-        ),
-        const SizedBox(height: 12),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
+              flex: 3,
+              child: _buildDropdown(
+                label: 'Gender',
+                icon: Iconsax.user_tag,
+                value: state.gender.isEmpty ? null : state.gender,
+                items: _genders,
+                onChanged: ref.read(bookTestPackageProvider.notifier).updateGender,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
               child: _buildTextField(
                 label: 'Age',
                 icon: Iconsax.calendar,
@@ -376,22 +376,20 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
                 onChanged: ref.read(bookTestPackageProvider.notifier).updateAge,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildDropdown(
-                label: 'Relation',
-                icon: Iconsax.people,
-                value: state.relation.isEmpty ? null : state.relation,
-                items: state.isBookingForSelf
-                    ? ['Self']
-                    : _relations.where((r) => r != 'Self').toList(),
-                onChanged: state.isBookingForSelf
-                    ? (_) {}
-                    : ref.read(bookTestPackageProvider.notifier).updateRelation,
-                enabled: !state.isBookingForSelf,
-              ),
-            ),
           ],
+        ),
+        const SizedBox(height: 12),
+        _buildDropdown(
+          label: 'Relation',
+          icon: Iconsax.people,
+          value: state.relation.isEmpty ? null : state.relation,
+          items: state.isBookingForSelf
+              ? ['Self']
+              : _relations.where((r) => r != 'Self').toList(),
+          onChanged: state.isBookingForSelf
+              ? (_) {}
+              : ref.read(bookTestPackageProvider.notifier).updateRelation,
+          enabled: !state.isBookingForSelf,
         ),
       ],
     );
@@ -463,9 +461,7 @@ class _BookTestPackageScreenState extends ConsumerState<BookTestPackageScreen> {
 
   Widget _buildAddressFields(BookTestPackageState state) {
     return Column(
-      key: ValueKey(
-        'address-${state.selectedAddressIndex}-${state.addressLine1}-${state.streetAddress}',
-      ),
+      key: ValueKey('address-${state.selectedAddressIndex}'),
       children: [
         _buildTextField(
           label: 'Address line (House / Flat / Building)',

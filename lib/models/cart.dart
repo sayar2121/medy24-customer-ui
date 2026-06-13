@@ -41,10 +41,12 @@ class CartSummary {
   final double taxes;
   final double totalAmountToBePaid;
   final double totalSaved;
+  final double orderValueDiscount;
 
   CartSummary({
     required this.totalItemAmount,
     required this.totalDiscount,
+    required this.orderValueDiscount,
     required this.platformCharges,
     required this.deliveryFees,
     required this.taxes,

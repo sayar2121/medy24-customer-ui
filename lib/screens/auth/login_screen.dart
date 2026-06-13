@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -138,131 +139,256 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenPadding,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildPhoneSlide(authState),
-                    _buildOtpSlide(authState),
-                  ],
-                ),
-              ),
-              if (authState.isLoading || _isSendingOtp)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.background,
+              AppColors.primary.withAlpha(15),
+              AppColors.primary.withAlpha(35),
             ],
           ),
         ),
-      ),
+        child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Brand Logo/Icon
+                    Center(
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 1000),
+                        curve: Curves.easeOutBack,
+                        builder: (context, value, child) {
+                          return Transform.scale(
+                            scale: value,
+                            child: Opacity(
+                              opacity: value.clamp(0.0, 1.0),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Image.asset(
+                          'assets/logo/logo.png',
+                          width: 220,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    
+                    // Glassmorphic Card
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 50 * (1 - value)),
+                          child: Opacity(
+                            opacity: value,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(32),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                          child: Container(
+                            padding: const EdgeInsets.all(32),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(180),
+                              borderRadius: BorderRadius.circular(32),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(200),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(10),
+                                  blurRadius: 40,
+                                  offset: const Offset(0, 20),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 380, // Fixed height for slides
+                                  child: PageView(
+                                    controller: _pageController,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    children: [
+                                      _buildPhoneSlide(authState),
+                                      _buildOtpSlide(authState),
+                                    ],
+                                  ),
+                                ),
+                                if (authState.isLoading || _isSendingOtp)
+                                  const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(top: 16),
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primary,
+                                        strokeWidth: 3,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
     );
   }
-
   Widget _buildPhoneSlide(AuthState authState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'STEP 1 OF 2',
-          style: AppTextStyles.tagline.copyWith(fontSize: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withAlpha(20),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            'STEP 1 OF 2',
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1,
+            ),
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         Text(
-          'Your wellness journey\nstarts here',
-          style: AppTextStyles.header.copyWith(height: 1.1, letterSpacing: -1),
+          'Your wellness journey\nstarts here.',
+          style: AppTextStyles.header.copyWith(
+            fontSize: 28,
+            height: 1.15,
+            letterSpacing: -1.2,
+          ),
         ),
         const SizedBox(height: 12),
         const Text(
           'Join Medy24 today. Your health and convenience are just a phone number away.',
           style: AppTextStyles.description,
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/logo/india.png',
-                    width: 24,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Iconsax.call),
+        const SizedBox(height: 32),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.divider.withAlpha(100)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(5),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                decoration: BoxDecoration(
+                  border: Border(
+                    right: BorderSide(color: AppColors.divider.withAlpha(100)),
                   ),
-                  const SizedBox(width: 8),
-                  const Text('+91', style: AppTextStyles.description),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                style: AppTextStyles.description.copyWith(
-                  fontWeight: FontWeight.w600,
                 ),
-                decoration: const InputDecoration(
-                  hintText: 'Enter phone number',
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/logo/india.png',
+                      width: 24,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Iconsax.call, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '+91', 
+                      style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Phone number',
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 22),
+        const Spacer(),
         SizedBox(
           width: double.infinity,
+          height: 56,
           child: ElevatedButton(
             onPressed: (authState.isLoading || _isSendingOtp)
                 ? null
                 : _handleSendOtp,
-            child: const Text('Send OTP'),
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              elevation: 8,
+              shadowColor: AppColors.primary.withAlpha(100),
+            ),
+            child: const Text('Send OTP', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Center(
           child: RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: AppTextStyles.caption,
+              style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
               children: [
                 const TextSpan(text: 'By signing in, you agree to our\n'),
                 TextSpan(
-                  text: 'terms and conditions',
+                  text: 'terms & conditions',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
-                    decoration: TextDecoration.underline,
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () => context.go('/terms-conditions'),
                 ),
                 const TextSpan(text: ' and '),
                 TextSpan(
-                  text: 'privacy policies',
+                  text: 'privacy policy',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
-                    decoration: TextDecoration.underline,
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () => context.go('/privacy-policy'),
@@ -271,7 +397,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
       ],
     );
   }
@@ -282,88 +407,150 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       children: [
         GestureDetector(
           onTap: _previousPage,
-          child: Row(
-            children: [
-              const Icon(
-                Iconsax.arrow_left_2,
-                size: 22,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Go back',
-                style: AppTextStyles.tagline.copyWith(color: AppColors.primary),
-              ),
-            ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(200),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.divider.withAlpha(50)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Iconsax.arrow_left_2,
+                  size: 16,
+                  color: AppColors.textPrimary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Back',
+                  style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 24),
-        Text('FINAL STEP', style: AppTextStyles.tagline.copyWith(fontSize: 12)),
-        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withAlpha(20),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            'FINAL STEP',
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
         Text(
-          'Secure\nVerification',
-          style: AppTextStyles.header.copyWith(height: 1.1, letterSpacing: -1),
+          'Secure\nVerification.',
+          style: AppTextStyles.header.copyWith(
+            fontSize: 28,
+            height: 1.15,
+            letterSpacing: -1.2,
+          ),
         ),
         const SizedBox(height: 12),
         RichText(
           text: TextSpan(
             style: AppTextStyles.description,
             children: [
-              const TextSpan(text: 'We\'ve sent a unique code to '),
+              const TextSpan(text: 'We\'ve sent a unique code to\n'),
               TextSpan(
                 text: '+91 ${_phoneController.text}',
                 style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primaryAccent,
+                  letterSpacing: 1,
                 ),
               ),
-              const TextSpan(text: '. Enter it below to continue.'),
+              const TextSpan(text: '. Enter it below.'),
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        Pinput(
-          length: 6,
-          controller: _otpController,
-          defaultPinTheme: PinTheme(
-            width: 64,
-            height: 84,
-            textStyle: AppTextStyles.header.copyWith(fontSize: 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.divider),
+        const Spacer(),
+        Center(
+          child: Pinput(
+            length: 6,
+            controller: _otpController,
+            defaultPinTheme: PinTheme(
+              width: 45,
+              height: 55,
+              textStyle: AppTextStyles.header.copyWith(fontSize: 22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.divider.withAlpha(100)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(5),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
             ),
-          ),
-          focusedPinTheme: PinTheme(
-            width: 64,
-            height: 84,
-            textStyle: AppTextStyles.header.copyWith(fontSize: 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary, width: 2),
+            focusedPinTheme: PinTheme(
+              width: 48,
+              height: 58,
+              textStyle: AppTextStyles.header.copyWith(fontSize: 24, color: AppColors.primary),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(30),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+            ),
+            submittedPinTheme: PinTheme(
+              width: 45,
+              height: 55,
+              textStyle: AppTextStyles.header.copyWith(fontSize: 22, color: AppColors.textPrimary),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withAlpha(100)),
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 32),
+        const Spacer(),
         SizedBox(
           width: double.infinity,
+          height: 56,
           child: ElevatedButton(
             onPressed: (authState.isLoading || _isSendingOtp)
                 ? null
                 : _handleVerifyOtp,
-            child: const Text('Verify and Login'),
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              elevation: 8,
+              shadowColor: AppColors.primary.withAlpha(100),
+            ),
+            child: const Text('Verify and Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Center(
           child: RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: AppTextStyles.caption,
+              style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
               children: [
-                const TextSpan(text: "Didn't receive the otp? "),
+                const TextSpan(text: "Didn't receive the OTP? "),
                 TextSpan(
                   text: 'Resend',
                   style: const TextStyle(
@@ -372,7 +559,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   recognizer: TapGestureRecognizer()..onTap = () {},
                 ),
-                const TextSpan(text: ' and '),
+                const TextSpan(text: ' or '),
                 TextSpan(
                   text: 'Contact Support',
                   style: const TextStyle(
@@ -388,7 +575,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
       ],
     );
   }
