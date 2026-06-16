@@ -6,6 +6,7 @@ import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
 import '../screens/order_medicine/my_order_screen.dart';
+import '../screens/order_medicine/order_tracking_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/about_us/about_us_screen.dart';
 import '../screens/patho_lab/patho_lab_list_screen.dart';
@@ -260,6 +261,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/my-medicine-orders',
       builder: (context, state) => const MyOrderScreen(),
+    ),
+    GoRoute(
+      path: '/order-tracking/:orderId',
+      builder: (context, state) {
+        final orderId = state.pathParameters['orderId']!;
+        return OrderTrackingScreen(orderId: orderId);
+      },
     ),
     GoRoute(
       path: '/cart',

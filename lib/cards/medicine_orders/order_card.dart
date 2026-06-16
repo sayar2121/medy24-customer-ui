@@ -65,12 +65,50 @@ class OrderCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (order.shopName != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.local_pharmacy, size: 16, color: AppColors.primary),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Fulfilled by ${order.shopName}',
+                      style: const TextStyle(fontSize: 12, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  if (order.items.isNotEmpty)
+                    Text(
+                      '${order.items.length} Item(s)',
+                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                    )
+                ],
+              ),
+            ],
             if (order.items.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text(
-                '${order.items.length} Item(s)',
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-              )
+              const Text('Items:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              const SizedBox(height: 6),
+              ...order.items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${item.quantity}x ${item.medicine.medicineName ?? "Unknown"}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '₹${((item.quantity) * (item.medicine.finalPrice ?? 0.0)).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              )),
             ]
           ],
         ),

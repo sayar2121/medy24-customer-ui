@@ -5,6 +5,8 @@ class OrderModel {
   final String? orderId;
   final String? customerId;
   final String? shopId;
+  final String? shopName;
+  final String? shopPhone;
   final String? orderType;
   final String? prescriptionUrl;
   final List<CartItem> items;
@@ -23,6 +25,7 @@ class OrderModel {
   final String? riderPhone;
   final String? vehicleNumber;
   final String? vehicleModel;
+  final String? deliveryOtp;
   final String? transactionId;
   final DateTime? acceptedAt;
   final DateTime? deliveredAt;
@@ -32,6 +35,8 @@ class OrderModel {
     this.orderId,
     this.customerId,
     this.shopId,
+    this.shopName,
+    this.shopPhone,
     this.orderType,
     this.prescriptionUrl,
     this.items = const [],
@@ -50,6 +55,7 @@ class OrderModel {
     this.riderPhone,
     this.vehicleNumber,
     this.vehicleModel,
+    this.deliveryOtp,
     this.transactionId,
     this.acceptedAt,
     this.deliveredAt,
@@ -61,6 +67,8 @@ class OrderModel {
       orderId: map['order_id']?.toString(),
       customerId: map['customer_id']?.toString(),
       shopId: map['shop_id']?.toString(),
+      shopName: map['shop_name']?.toString(),
+      shopPhone: map['shop_phone']?.toString(),
       orderType: map['order_type']?.toString(),
       prescriptionUrl: map['prescription_url']?.toString(),
       items: map['items'] != null
@@ -83,6 +91,7 @@ class OrderModel {
       riderPhone: map['rider_phone']?.toString(),
       vehicleNumber: map['vehicle_number']?.toString(),
       vehicleModel: map['vehicle_model']?.toString(),
+      deliveryOtp: map['delivery_otp']?.toString(),
       transactionId: map['transaction_id']?.toString(),
       acceptedAt: map['accepted_at'] != null ? DateTime.tryParse(map['accepted_at']) : null,
       deliveredAt: map['delivered_at'] != null ? DateTime.tryParse(map['delivered_at']) : null,
@@ -97,6 +106,8 @@ class OrderModel {
       'order_id': orderId,
       'customer_id': customerId,
       'shop_id': shopId,
+      'shop_name': shopName,
+      'shop_phone': shopPhone,
       'order_type': orderType,
       'prescription_url': prescriptionUrl,
       // 'items': items.map((x) => x.toMap()).toList(), // cart item to map not strictly needed for UI models
@@ -115,6 +126,7 @@ class OrderModel {
       'rider_phone': riderPhone,
       'vehicle_number': vehicleNumber,
       'vehicle_model': vehicleModel,
+      'delivery_otp': deliveryOtp,
       'transaction_id': transactionId,
       'accepted_at': acceptedAt?.toIso8601String(),
       'delivered_at': deliveredAt?.toIso8601String(),

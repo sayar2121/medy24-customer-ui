@@ -18,7 +18,8 @@ import '../../widgets/category_content_sliver.dart';
 import '../../providers/medicine_provider.dart';
 import '../../cards/medicine/medicine_card.dart';
 import '../../widgets/welcome_popup.dart';
-
+import '../../providers/order_provider.dart';
+import '../../cards/medicine_orders/order_card.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -395,8 +396,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               const SizedBox(height: 28),
 
-              // ── Recent Section Header (if needed later)
-              _RecentHeader(),
+              // ── Recent Section
+              Consumer(
+                builder: (context, ref, child) {
+                  final orderState = ref.watch(orderProvider);
+                  if (orderState.orders.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final recentOrders = orderState.orders.take(2).toList();
+
+                  return Column(
+                    children: [
+                      _RecentHeader(),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: recentOrders.map((order) => OrderCard(
+                            order: order,
+                            onTap: () => context.push('/my-medicine-orders'),
+                          )).toList(),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
 
               const SizedBox(height: 16),
 

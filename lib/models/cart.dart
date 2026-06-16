@@ -20,12 +20,15 @@ class CartItem {
   }
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
+    final priceVal = json['price_per_unit'] ?? json['price'];
+    final parsedPrice = priceVal != null ? double.tryParse(priceVal.toString()) : null;
+
     return CartItem(
       medicine: MedicineModel(
         medicineId: json['medicine_id']?.toString(),
-        medicineName: json['medicine_name']?.toString(),
-        finalPrice: json['price_per_unit'] != null ? double.tryParse(json['price_per_unit'].toString()) : null,
-        mrp: json['price_per_unit'] != null ? double.tryParse(json['price_per_unit'].toString()) : null, // API only gives price_per_unit
+        medicineName: (json['medicine_name'] ?? json['name'])?.toString(),
+        finalPrice: parsedPrice,
+        mrp: parsedPrice, // API only gives price_per_unit, or shop sends price
         medicinePhoto: json['medicine_photo']?.toString(),
       ),
       quantity: json['quantity'] ?? 1,
