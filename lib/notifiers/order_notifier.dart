@@ -44,6 +44,29 @@ class OrderState {
 class OrderNotifier extends StateNotifier<OrderState> {
   final Ref ref;
   final OrderService _orderService;
+  
+  OrderService get orderService => _orderService;
+
+  Completer<OrderModel?>? _approveQuoteCompleter;
+  Completer<OrderModel?>? _rejectQuoteCompleter;
+
+  Future<OrderModel?> approveQuote(String orderId, String quoteId, String paymentMode) async {
+    _approveQuoteCompleter = Completer<OrderModel?>();
+    _orderService.sendMessage({
+      "type": "approve_quote",
+      "order_id": orderId,
+      "quote_id": quoteId,
+      "payment_mode": paymentMode
+    });
+    return _approveQuoteCompleter!.future;
+  }
+
+  Future<OrderModel?> rejectQuote(String orderId, String quoteId) async {
+    _rejectQuoteCompleter = Completer<OrderModel?>();
+    _orderService.rejectQuote(orderId, quoteId);
+    return _rejectQuoteCompleter!.future;
+  }
+  
   StreamSubscription? _wsSubscription;
 
   // Completers to simulate request/response over WebSocket
@@ -110,7 +133,6 @@ class OrderNotifier extends StateNotifier<OrderState> {
       case 'order_placed':
         final newOrder = OrderModel.fromMap(data['order']);
         _updateSingleOrderInState(newOrder);
-        fetchOrders(refresh: true); // fetch fresh list 
         
         if (newOrder.orderType == 'cart') {
           ref.read(cartProvider.notifier).clearCartLocal();
@@ -124,8 +146,70 @@ class OrderNotifier extends StateNotifier<OrderState> {
       case 'order_accepted':
       case 'order_status_update':
       case 'order_updated':
+      case 'quote_approved':
+      case 'quote_rejected':
         final updatedOrder = OrderModel.fromMap(data['order']);
         _updateSingleOrderInState(updatedOrder);
+        if (type == 'quote_approved') {
+          _approveQuoteCompleter?.complete(updatedOrder);
+          _approveQuoteCompleter = null;
+        } else if (type == 'quote_rejected') {
+          _rejectQuoteCompleter?.complete(updatedOrder);
+          _rejectQuoteCompleter = null;
+        }
+        break;
+
+      case 'quote_received':
+        final orderId = data['order_id'];
+        final quoteData = data['quote'];
+        final index = state.orders.indexWhere((o) => o.orderId == orderId);
+        if (index >= 0) {
+          final order = state.orders[index];
+          final newQuote = QuoteModel.fromMap(quoteData);
+          
+          final existingQuoteIndex = order.quotes.indexWhere((q) => q.shopId == newQuote.shopId);
+          List<QuoteModel> updatedQuotes;
+          if (existingQuoteIndex >= 0) {
+            updatedQuotes = List<QuoteModel>.from(order.quotes);
+            updatedQuotes[existingQuoteIndex] = newQuote;
+          } else {
+            updatedQuotes = List<QuoteModel>.from(order.quotes)..add(newQuote);
+          }
+          
+          final updatedOrder = OrderModel(
+            orderId: order.orderId,
+            customerId: order.customerId,
+            shopId: order.shopId,
+            shopName: order.shopName,
+            shopPhone: order.shopPhone,
+            orderType: order.orderType,
+            prescriptionUrl: order.prescriptionUrl,
+            items: order.items,
+            quotes: updatedQuotes,
+            receiverName: order.receiverName,
+            receiverPhone: order.receiverPhone,
+            deliveryAddress: order.deliveryAddress,
+            itemTotal: order.itemTotal,
+            platformFee: order.platformFee,
+            deliveryFee: order.deliveryFee,
+            taxes: order.taxes,
+            totalBillAmount: order.totalBillAmount,
+            paymentMode: order.paymentMode,
+            paymentStatus: order.paymentStatus,
+            orderStatus: order.orderStatus == 'broadcast' ? 'awaiting_customer_approval' : order.orderStatus,
+            riderName: order.riderName,
+            riderPhone: order.riderPhone,
+            vehicleNumber: order.vehicleNumber,
+            vehicleModel: order.vehicleModel,
+            deliveryOtp: order.deliveryOtp,
+            transactionId: order.transactionId,
+            acceptedAt: order.acceptedAt,
+            deliveredAt: order.deliveredAt,
+            createdAt: order.createdAt,
+          );
+          
+          _updateSingleOrderInState(updatedOrder);
+        }
         break;
 
       case 'order_cancelled':
@@ -220,6 +304,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
     required double platformFee,
     required double deliveryFee,
     required double taxes,
+    required double deliveryTip,
     required String paymentMode,
     required String receiverName,
     required String receiverPhone,
@@ -240,6 +325,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
         "platform_fee": platformFee,
         "delivery_fee": deliveryFee,
         "taxes": taxes,
+        "delivery_tip": deliveryTip,
         "payment_mode": paymentMode,
         "receiver_name": receiverName,
         "receiver_phone": receiverPhone,

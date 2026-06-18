@@ -123,11 +123,19 @@ class OrderCard extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'broadcast':
         color = Colors.orange;
-        text = 'PENDING ASSIGNMENT';
+        text = 'WAITING FOR QUOTES';
+        break;
+      case 'awaiting_customer_approval':
+        color = Colors.blueAccent;
+        text = 'QUOTES RECEIVED';
         break;
       case 'accepted':
         color = Colors.blue;
         text = 'ACCEPTED';
+        break;
+      case 'pending_payment':
+        color = Colors.orange;
+        text = 'PENDING PAYMENT';
         break;
       case 'packing':
         color = Colors.indigo;

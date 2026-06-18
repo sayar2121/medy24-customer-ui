@@ -12,12 +12,14 @@ class CartState {
   final dynamic selectedAddress;
   final bool isLoading;
   final String? error;
+  final double deliveryTip;
 
   CartState({
     this.items = const [],
     this.selectedAddress,
     this.isLoading = false,
     this.error,
+    this.deliveryTip = 0.0,
   });
 
   CartState copyWith({
@@ -25,12 +27,14 @@ class CartState {
     dynamic selectedAddress,
     bool? isLoading,
     String? error,
+    double? deliveryTip,
   }) {
     return CartState(
       items: items ?? this.items,
       selectedAddress: selectedAddress ?? this.selectedAddress,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      deliveryTip: deliveryTip ?? this.deliveryTip,
     );
   }
 
@@ -64,7 +68,7 @@ class CartState {
 
     double totalToPay = items.isEmpty
         ? 0.0
-        : subTotal + platformCharges + deliveryFees + taxes;
+        : subTotal + platformCharges + deliveryFees + taxes + deliveryTip;
 
     return CartSummary(
       totalItemAmount: itemAmount,
@@ -73,6 +77,7 @@ class CartState {
       platformCharges: platformCharges,
       deliveryFees: deliveryFees,
       taxes: taxes,
+      deliveryTip: deliveryTip,
       totalAmountToBePaid: totalToPay,
       totalSaved: itemDiscount + orderValueDiscount,
     );
@@ -173,6 +178,10 @@ class CartNotifier extends StateNotifier<CartState> {
     state = state.copyWith(selectedAddress: address);
   }
 
+  void setDeliveryTip(double amount) {
+    state = state.copyWith(deliveryTip: amount);
+  }
+
   Future<void> clearCart() async {
     final cid = _customerId;
     if (cid == null) {
@@ -190,6 +199,6 @@ class CartNotifier extends StateNotifier<CartState> {
   }
 
   void clearCartLocal() {
-    state = CartState(selectedAddress: state.selectedAddress);
+    state = CartState(selectedAddress: state.selectedAddress, deliveryTip: 0.0);
   }
 }

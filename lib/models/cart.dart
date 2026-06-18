@@ -42,6 +42,7 @@ class CartSummary {
   final double platformCharges;
   final double deliveryFees;
   final double taxes;
+  final double deliveryTip;
   final double totalAmountToBePaid;
   final double totalSaved;
   final double orderValueDiscount;
@@ -53,6 +54,7 @@ class CartSummary {
     required this.platformCharges,
     required this.deliveryFees,
     required this.taxes,
+    required this.deliveryTip,
     required this.totalAmountToBePaid,
     required this.totalSaved,
   });

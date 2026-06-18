@@ -1,6 +1,61 @@
 import 'dart:convert';
 import 'cart.dart';
 
+class QuoteModel {
+  final String? quoteId;
+  final String? orderId;
+  final String? shopId;
+  final String? shopName;
+  final String? shopPhone;
+  final String? shopAddress;
+  final List<CartItem> items;
+  final double? itemTotal;
+  final double? platformFee;
+  final double? deliveryFee;
+  final double? taxes;
+  final double? totalBillAmount;
+  final String? status;
+  final DateTime? createdAt;
+
+  QuoteModel({
+    this.quoteId,
+    this.orderId,
+    this.shopId,
+    this.shopName,
+    this.shopPhone,
+    this.shopAddress,
+    this.items = const [],
+    this.itemTotal,
+    this.platformFee,
+    this.deliveryFee,
+    this.taxes,
+    this.totalBillAmount,
+    this.status,
+    this.createdAt,
+  });
+
+  factory QuoteModel.fromMap(Map<String, dynamic> map) {
+    return QuoteModel(
+      quoteId: map['quote_id']?.toString(),
+      orderId: map['order_id']?.toString(),
+      shopId: map['shop_id']?.toString(),
+      shopName: map['shop_name']?.toString(),
+      shopPhone: map['shop_phone']?.toString(),
+      shopAddress: map['shop_address']?.toString(),
+      items: map['items'] != null
+          ? List<CartItem>.from(map['items']?.map((x) => CartItem.fromJson(x)))
+          : [],
+      itemTotal: map['item_total'] != null ? double.tryParse(map['item_total'].toString()) : null,
+      platformFee: map['platform_fee'] != null ? double.tryParse(map['platform_fee'].toString()) : null,
+      deliveryFee: map['delivery_fee'] != null ? double.tryParse(map['delivery_fee'].toString()) : null,
+      taxes: map['taxes'] != null ? double.tryParse(map['taxes'].toString()) : null,
+      totalBillAmount: map['total_bill_amount'] != null ? double.tryParse(map['total_bill_amount'].toString()) : null,
+      status: map['status']?.toString(),
+      createdAt: map['created_at'] != null ? DateTime.tryParse(map['created_at']) : null,
+    );
+  }
+}
+
 class OrderModel {
   final String? orderId;
   final String? customerId;
@@ -10,6 +65,7 @@ class OrderModel {
   final String? orderType;
   final String? prescriptionUrl;
   final List<CartItem> items;
+  final List<QuoteModel> quotes;
   final String? receiverName;
   final String? receiverPhone;
   final Map<String, dynamic>? deliveryAddress;
@@ -40,6 +96,7 @@ class OrderModel {
     this.orderType,
     this.prescriptionUrl,
     this.items = const [],
+    this.quotes = const [],
     this.receiverName,
     this.receiverPhone,
     this.deliveryAddress,
@@ -73,6 +130,9 @@ class OrderModel {
       prescriptionUrl: map['prescription_url']?.toString(),
       items: map['items'] != null
           ? List<CartItem>.from(map['items']?.map((x) => CartItem.fromJson(x)))
+          : [],
+      quotes: map['quotes'] != null
+          ? List<QuoteModel>.from(map['quotes']?.map((x) => QuoteModel.fromMap(x)))
           : [],
       receiverName: map['receiver_name']?.toString(),
       receiverPhone: map['receiver_phone']?.toString(),

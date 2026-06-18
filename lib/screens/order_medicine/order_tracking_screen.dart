@@ -6,6 +6,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/order_provider.dart';
 import '../../theme/app_theme.dart';
+import 'components/quote_approval_card.dart';
 
 class OrderTrackingScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -46,20 +47,33 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                          order.orderStatus == 'out_for_delivery' || 
                          order.orderStatus == 'delivered';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          context.go('/home');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Iconsax.arrow_left, color: AppColors.textPrimary),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
+          title: Text(
+            'Track Order',
+            style: AppTextStyles.header.copyWith(fontSize: 18),
+          ),
         ),
-        title: Text(
-          'Track Order',
-          style: AppTextStyles.header.copyWith(fontSize: 18),
-        ),
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -254,9 +268,22 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
               ),
             ),
 
-            // --- 3.5 Itemized Bill ---
-            if (order.items.isNotEmpty)
-              Container(
+            // --- 3.5 Quote Approval (If Applicable) ---
+            if ((order.orderStatus == 'awaiting_customer_approval' || order.orderStatus == 'pending_payment') && order.quotes.isNotEmpty)
+              ...order.quotes.map((quote) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: QuoteApprovalCard(order: order, quote: quote),
+              )),
+
+            if (order.items.isNotEmpty) 
+              () {
+                final dynamicItemTotal = order.items.fold<double>(
+                  0.0,
+                  (sum, item) => sum + (item.quantity * (item.medicine.finalPrice ?? item.medicine.mrp ?? 0.0)),
+                );
+                final dynamicGrandTotal = dynamicItemTotal + (order.taxes ?? 0.0) + (order.platformFee ?? 0.0) + (order.deliveryFee ?? 0.0);
+
+                return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 padding: const EdgeInsets.all(16),
                 decoration: AppCardStyles.sleekCard,
@@ -288,7 +315,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Item Total', style: TextStyle(color: AppColors.textSecondary)),
-                        Text('₹${(order.itemTotal ?? 0.0).toStringAsFixed(2)}'),
+                        Text('₹${dynamicItemTotal.toStringAsFixed(2)}'),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -308,16 +335,17 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                       children: [
                         Text('Grand Total', style: AppTextStyles.header.copyWith(fontSize: 16)),
                         Text(
-                          '₹${(order.totalBillAmount ?? 0.0).toStringAsFixed(2)}',
+                          '₹${dynamicGrandTotal.toStringAsFixed(2)}',
                           style: AppTextStyles.header.copyWith(color: AppColors.primary, fontSize: 18),
                         ),
                       ],
                     ),
                   ],
                 ),
-              ),
+              );
+            }(),
 
-            // --- 4. Advertisement Banner ---
+            // --- 5. Advertisement Banner ---
             Container(
               margin: const EdgeInsets.all(16),
               height: 100,
@@ -374,8 +402,9 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStatusRow(String title, bool isCompleted, bool showLine) {
     return Row(

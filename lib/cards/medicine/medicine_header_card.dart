@@ -7,8 +7,9 @@ import 'package:go_router/go_router.dart';
 
 class MedicineHeaderCard extends StatelessWidget {
   final MedicineModel medicine;
+  final GlobalKey imageKey;
 
-  const MedicineHeaderCard({super.key, required this.medicine});
+  const MedicineHeaderCard({super.key, required this.medicine, required this.imageKey});
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +23,12 @@ class MedicineHeaderCard extends StatelessWidget {
         children: [
           // Background Image
           Positioned.fill(
-            child: Image.asset(
-              'assets/logo/demo_med_image.png',
-              fit: BoxFit.cover,
+            child: Container(
+              key: imageKey,
+              child: Image.asset(
+                'assets/logo/demo_med_image.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
 

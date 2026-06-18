@@ -5,23 +5,31 @@ import '../../models/medicine.dart';
 import '../../theme/app_theme.dart';
 
 import '../../providers/cart_provider.dart';
+import '../../services/cart_animation_service.dart';
 
-class MedicineCard extends ConsumerWidget {
+class MedicineCard extends ConsumerStatefulWidget {
   final MedicineModel medicine;
   final VoidCallback onTap;
 
   const MedicineCard({super.key, required this.medicine, required this.onTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isOutOfStock = medicine.isActive == false;
+  ConsumerState<MedicineCard> createState() => _MedicineCardState();
+}
+
+class _MedicineCardState extends ConsumerState<MedicineCard> {
+  final GlobalKey _imageKey = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) {
+    final isOutOfStock = widget.medicine.isActive == false;
     final cartState = ref.watch(cartProvider);
-    final cartItemIndex = cartState.items.indexWhere((item) => item.medicine.medicineId == medicine.medicineId);
+    final cartItemIndex = cartState.items.indexWhere((item) => item.medicine.medicineId == widget.medicine.medicineId);
     final isInCart = cartItemIndex != -1;
     final cartItem = isInCart ? cartState.items[cartItemIndex] : null;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Container(
         decoration: AppCardStyles.sleekCard,
         child: Column(
@@ -36,14 +44,17 @@ class MedicineCard extends ConsumerWidget {
                   ),
                   child: AspectRatio(
                     aspectRatio: 1.3,
-                    child: Image.asset(
-                      'assets/logo/demo_med_image.png',
-                      fit: BoxFit.cover,
+                    child: Container(
+                      key: _imageKey,
+                      child: Image.asset(
+                        'assets/logo/demo_med_image.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
-                if (medicine.discountPercent != null &&
-                    medicine.discountPercent! > 0)
+                if (widget.medicine.discountPercent != null &&
+                    widget.medicine.discountPercent! > 0)
                   Positioned(
                     top: 10,
                     left: 10,
@@ -57,7 +68,7 @@ class MedicineCard extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '${medicine.discountPercent!.toInt()}% OFF',
+                        '${widget.medicine.discountPercent!.toInt()}% OFF',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -75,14 +86,14 @@ class MedicineCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    medicine.medicineName ?? 'Unknown Medicine',
+                    widget.medicine.medicineName ?? 'Unknown Medicine',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.cardTitle,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    medicine.medicineQuantity ?? '',
+                    widget.medicine.medicineQuantity ?? '',
                     style: AppTextStyles.cardSubtitle,
                   ),
                   const SizedBox(height: 8),
@@ -91,16 +102,16 @@ class MedicineCard extends ConsumerWidget {
                   Row(
                     children: [
                       Text(
-                        '₹${medicine.finalPrice?.toStringAsFixed(0) ?? '0'}',
+                        '₹${widget.medicine.finalPrice?.toStringAsFixed(0) ?? '0'}',
                         style: AppTextStyles.cardTitle.copyWith(
                           color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(width: 6),
-                      if (medicine.discountPercent != null &&
-                          medicine.discountPercent! > 0)
+                      if (widget.medicine.discountPercent != null &&
+                          widget.medicine.discountPercent! > 0)
                         Text(
-                          '₹${medicine.mrp?.toStringAsFixed(0) ?? '0'}',
+                          '₹${widget.medicine.mrp?.toStringAsFixed(0) ?? '0'}',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -148,7 +159,7 @@ class MedicineCard extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   InkWell(
-                                    onTap: () => ref.read(cartProvider.notifier).updateQuantity(medicine.medicineId!, cartItem!.quantity - 1),
+                                    onTap: () => ref.read(cartProvider.notifier).updateQuantity(widget.medicine.medicineId!, cartItem!.quantity - 1),
                                     borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
                                     child: const Padding(
                                       padding: EdgeInsets.all(6.0),
@@ -165,7 +176,7 @@ class MedicineCard extends ConsumerWidget {
                                     ),
                                   ),
                                   InkWell(
-                                    onTap: () => ref.read(cartProvider.notifier).updateQuantity(medicine.medicineId!, cartItem.quantity + 1),
+                                    onTap: () => ref.read(cartProvider.notifier).updateQuantity(widget.medicine.medicineId!, cartItem.quantity + 1),
                                     borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
                                     child: const Padding(
                                       padding: EdgeInsets.all(6.0),
@@ -177,7 +188,8 @@ class MedicineCard extends ConsumerWidget {
                             )
                           : GestureDetector(
                               onTap: isOutOfStock ? null : () {
-                                ref.read(cartProvider.notifier).addItem(medicine);
+                                CartAnimationService.triggerAnimation(_imageKey);
+                                ref.read(cartProvider.notifier).addItem(widget.medicine);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text('Added to cart'),

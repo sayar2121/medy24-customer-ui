@@ -44,6 +44,8 @@ class CartBillSummaryCard extends ConsumerWidget {
             _buildRow('Order Value Offer', -summary.orderValueDiscount, Iconsax.tag, color: AppColors.success),
           _buildRow('Platform Fee', summary.platformCharges, Iconsax.monitor),
           _buildRow('Delivery Fee', summary.deliveryFees, Iconsax.truck_fast),
+          if (summary.deliveryTip > 0)
+            _buildRow('Delivery Tip', summary.deliveryTip, Icons.motorcycle),
           _buildRow('Taxes', summary.taxes, Iconsax.bank),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),

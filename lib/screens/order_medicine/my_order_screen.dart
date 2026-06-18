@@ -43,7 +43,13 @@ class _MyOrderScreenState extends ConsumerState<MyOrderScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
         ),
         title: const Text('My Medicine Orders'),
         backgroundColor: Colors.white,

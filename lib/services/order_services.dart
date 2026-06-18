@@ -84,6 +84,23 @@ class OrderService {
     }
   }
 
+  void approveQuote(String orderId, String quoteId, String paymentMode) {
+    sendMessage({
+      "type": "approve_quote",
+      "order_id": orderId,
+      "quote_id": quoteId,
+      "payment_mode": paymentMode,
+    });
+  }
+
+  void rejectQuote(String orderId, String quoteId) {
+    sendMessage({
+      "type": "reject_quote",
+      "order_id": orderId,
+      "quote_id": quoteId,
+    });
+  }
+
   void dispose() {
     disconnect();
     _messageController.close();

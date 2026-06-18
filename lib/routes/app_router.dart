@@ -32,6 +32,9 @@ import '../screens/book_test_package/book_test_package_screen.dart';
 import '../screens/payment/checkout_screen.dart';
 import '../screens/cart/cart_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/floating_cart_pill.dart';
+import '../services/cart_animation_service.dart';
+import 'package:add_to_cart_animation/add_to_cart_animation.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
@@ -114,16 +117,36 @@ final appRouter = GoRouter(
               SystemNavigator.pop();
             }
           },
-          child: Scaffold(
-            body: navigationShell,
-            bottomNavigationBar: CustomBottomNavBar(
-              currentIndex: navigationShell.currentIndex,
-              onTap: (index) {
-                navigationShell.goBranch(
-                  index,
-                  initialLocation: index == navigationShell.currentIndex,
-                );
-              },
+          child: AddToCartAnimation(
+            cartKey: CartAnimationService.cartKey,
+            createAddToCartAnimation: (runAddToCartAnimation) {
+              CartAnimationService.runAddToCartAnimation = runAddToCartAnimation;
+            },
+            jumpAnimation: const JumpAnimationOptions(
+              curve: Curves.ease,
+              duration: Duration(milliseconds: 100),
+            ),
+            dragAnimation: const DragToCartAnimationOptions(
+              rotation: true,
+              curve: Curves.easeIn,
+              duration: Duration(milliseconds: 800),
+            ),
+            child: Scaffold(
+              body: Stack(
+                children: [
+                  navigationShell,
+                  const FloatingCartPill(),
+                ],
+              ),
+              bottomNavigationBar: CustomBottomNavBar(
+                currentIndex: navigationShell.currentIndex,
+                onTap: (index) {
+                  navigationShell.goBranch(
+                    index,
+                    initialLocation: index == navigationShell.currentIndex,
+                  );
+                },
+              ),
             ),
           ),
         );
